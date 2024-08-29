@@ -22,7 +22,9 @@ public class Employee {
     private String email;
     private String password;
     private String contact;
+    private String designation;
     @JsonBackReference
     @ManyToOne(cascade = CascadeType.ALL,fetch = FetchType.LAZY)
+    @JoinColumn(name = "manager_id")
     private Manager manager;
 }

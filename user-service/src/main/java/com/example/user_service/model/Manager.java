@@ -24,6 +24,6 @@ public class Manager {
     private String contact;
     @OneToMany(mappedBy ="manager")
     @JsonManagedReference
-//    @JoinColumn(name = "manager_id")
+
     private List<Employee> employees;
 }
