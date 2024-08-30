@@ -33,7 +33,7 @@ public class UserService {
         Manager manager = Manager.builder()
                 .name(managerDto.getName())
                 .email(managerDto.getEmail())
-                .password(managerDto.getPassword())
+//                .password(managerDto.getPassword())
                 .contact(managerDto.getContact())
                 .build();
         User user = User.builder()
@@ -51,7 +51,7 @@ public class UserService {
         Employee employee = Employee.builder()
                 .name(employeedto.getName())
                 .email(employeedto.getEmail())
-                .password(employeedto.getPassword())
+//                .password(employeedto.getPassword())
                 .contact(employeedto.getContact())
                 .designation(employeedto.getDesignation())
                 .manager(manager)

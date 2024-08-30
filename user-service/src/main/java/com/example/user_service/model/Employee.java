@@ -20,7 +20,7 @@ public class Employee {
     private Long empId;
     private String name;
     private String email;
-    private String password;
+//    private String password;
     private String contact;
     private String designation;
     @JsonBackReference
