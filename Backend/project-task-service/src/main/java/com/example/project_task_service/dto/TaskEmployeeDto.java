@@ -13,11 +13,12 @@ import java.time.LocalDate;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class TaskDto {
+public class TaskEmployeeDto {
     private String taskTitle;
     private String taskDescription;
     private LocalDate dueDate;
     @Enumerated(value = EnumType.STRING)
     private Priority priority;
-    private Long employeeId; //from feign client(Assigned to)
+    @Enumerated(value = EnumType.STRING)
+    private Status status;
 }
