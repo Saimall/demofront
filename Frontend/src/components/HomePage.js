@@ -18,7 +18,7 @@ const ProjectManagementHomepage = () => {
             <h1 className="text-xl font-bold text-gray-900">TaskFlow</h1>
           </div>
           <div>
-            <button className="bg-blue-500 text-white px-4 py-2 rounded-md mr-2 hover:bg-blue-600 transition-colors">Register</button>
+            <button className="bg-blue-500 text-white px-4 py-2 rounded-md mr-2 hover:bg-blue-600 transition-colors" onClick={() => navigate("/register")}>Register</button>
             {/* <button className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition-colors" onClick={navigate("/login")}>Login</button> */}
             <button
   className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition-colors"
