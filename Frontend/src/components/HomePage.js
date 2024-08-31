@@ -1,7 +1,14 @@
 import React from 'react';
 import { Activity } from 'lucide-react';
+import { useNavigate } from 'react-router';
+
 
 const ProjectManagementHomepage = () => {
+
+    const navigate = useNavigate();
+    
+
+
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col">
       <header className="bg-white shadow-sm">
@@ -12,7 +19,13 @@ const ProjectManagementHomepage = () => {
           </div>
           <div>
             <button className="bg-blue-500 text-white px-4 py-2 rounded-md mr-2 hover:bg-blue-600 transition-colors">Register</button>
-            <button className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition-colors">Login</button>
+            {/* <button className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition-colors" onClick={navigate("/login")}>Login</button> */}
+            <button
+  className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition-colors"
+  onClick={() => navigate("/login")}
+>
+  Login
+</button>
           </div>
         </div>
       </header>
