@@ -20,7 +20,7 @@ public class Manager {
     private Long managerId;
     private String name;
     private String email;
-    private String password;
+//    private String password;
     private String contact;
     @OneToMany(mappedBy ="manager")
     @JsonManagedReference

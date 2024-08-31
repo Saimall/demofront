@@ -29,11 +29,6 @@ public class ManagerController {
         return userService.registerEmployee(employeedto,managerId);
     }
 
-    //Testing Purpose
-//    @GetMapping("/getall")
-//    public List<Manager> getAllManagers(){
-//        return userService.getAllManagers();
-//    }
 
     //To View Employees Assigned to Manager
     @GetMapping("/{managerId}/viewEmployees")
@@ -46,11 +41,7 @@ public class ManagerController {
     public Employee viewEmployeeById(@PathVariable Long employeeId){
         return userService.viewEmployeeById(employeeId);
     }
-
-//    @PutMapping("/updateEmployee/{employeeId}")
-//    public Employee updateEmployee(@RequestBody EmployeeDto employeedto, @PathVariable Long employeeId){
-//        return userService.updateEmployee(employeedto,employeeId);
-//    }
+    
 
     //To Delete a Employee
     @DeleteMapping("/deleteEmployee/{employeeId}")

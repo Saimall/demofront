@@ -5,4 +5,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface ManagerRepo extends JpaRepository<Manager,Long> {
 
+    boolean existsByEmail(String email);
 }
