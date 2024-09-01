@@ -1,35 +1,67 @@
-import React from 'react';
-import { Trash2 } from 'lucide-react';
-import { useState, useEffect } from 'react';
-import { Activity } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Trash2, Activity } from 'lucide-react';
 import { useNavigate } from 'react-router';
-
-
+import RegisterEmployeePopup from './RegisterEmployeePopup';
 
 const ViewEmployees = () => {
-    
-    const navigate = useNavigate();
-    
-    const [Employees,setEmployees] = useState([]);
+  const navigate = useNavigate();
+  const [employees, setEmployees] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [isPopupOpen, setIsPopupOpen] = useState(false);
+  const employeesPerPage = 10;
 
-    useEffect(() => {
-        // Fetch initial project data from the server
-        fetch('http://localhost:3001/employees')
-          .then(response => response.json())
-          .then(data => setEmployees(data));
-      }, []);
+  useEffect(() => {
+    fetch('http://localhost:3001/employees')
+      .then((response) => response.json())
+      .then((data) => setEmployees(data));
+  }, []);
+
+  const totalEmployees = employees.length;
+  const totalPages = Math.ceil(totalEmployees / employeesPerPage);
+
+  const indexOfLastEmployee = currentPage * employeesPerPage;
+  const indexOfFirstEmployee = indexOfLastEmployee - employeesPerPage;
+  const currentEmployees = employees.slice(indexOfFirstEmployee, indexOfLastEmployee);
+
+  const handlePageChange = (pageNumber) => {
+    setCurrentPage(pageNumber);
+  };
+
+  const handleAddEmployee = (newEmployee) => {
+    setEmployees([...employees, newEmployee]);
+  };
+
+  const handleDeleteEmployee = (id) => {
+    fetch(`http://localhost:3001/employees/${id}`, {
+      method: 'DELETE',
+    })
+    .then(() => {
+      setEmployees(employees.filter(employee => employee.id !== id));
+    });
+  };
 
   return (
     <div className="bg-gray-100 min-h-screen">
       <header className="bg-white shadow-sm">
-      <div className="max-w-7xl mx-auto px-4 py-3 sm:px-6 lg:px-8 flex justify-between items-center">
+        <div className="max-w-7xl mx-auto px-4 py-3 sm:px-6 lg:px-8 flex justify-between items-center">
           <div className="flex items-center">
             <Activity className="h-8 w-8 text-blue-500 mr-2" />
             <h1 className="text-xl font-bold text-gray-900">TaskFlow</h1>
           </div>
-          <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" onClick={() => navigate("/HomePage")}>
-            Logout
-          </button>
+          <div className="flex space-x-4">
+            <button
+              className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+              onClick={() => navigate('/ManagerDashboard')}
+            >
+              Go to Dashboard
+            </button>
+            <button
+              className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+              onClick={() => navigate('/HomePage')}
+            >
+              Logout
+            </button>
+          </div>
         </div>
       </header>
 
@@ -40,10 +72,10 @@ const ViewEmployees = () => {
               <div className="flex justify-between items-center mb-4">
                 <h2 className="text-xl font-semibold text-gray-900">EMPLOYEE LIST</h2>
                 <div>
-                  <button className="px-4 py-2 bg-purple-500 text-white rounded-md mr-2 hover:bg-purple-600">
-                    Previous
-                  </button>
-                  <button className="px-4 py-2 bg-purple-500 text-white rounded-md hover:bg-purple-600">
+                  <button
+                    className="px-4 py-2 bg-purple-500 text-white rounded-md hover:bg-purple-600"
+                    onClick={() => setIsPopupOpen(true)}
+                  >
                     + Add Employee
                   </button>
                 </div>
@@ -52,28 +84,16 @@ const ViewEmployees = () => {
                 <table className="min-w-full divide-y divide-gray-200">
                   <thead className="bg-gray-50">
                     <tr>
-                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Employee ID
-                      </th>
-                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Employee Name
-                      </th>
-                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Email ID
-                      </th>
-                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Contact
-                      </th>
-                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Designation
-                      </th>
-                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Action
-                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Employee ID</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Employee Name</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email ID</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Contact</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Designation</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Action</th>
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
-                    {Employees.map((employee) => (
+                    {currentEmployees.map((employee) => (
                       <tr key={employee.id}>
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">#{employee.id}</td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{employee.name}</td>
@@ -81,7 +101,10 @@ const ViewEmployees = () => {
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{employee.contact}</td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{employee.designation}</td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          <button className="text-red-500 hover:text-red-700">
+                          <button
+                            className="text-red-500 hover:text-red-700"
+                            onClick={() => handleDeleteEmployee(employee.id)}
+                          >
                             <Trash2 size={20} />
                           </button>
                         </td>
@@ -90,29 +113,54 @@ const ViewEmployees = () => {
                   </tbody>
                 </table>
               </div>
-              <div className="flex justify-center mt-4">
-                <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
-                  <button className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
-                    Previous
-                  </button>
-                  <button className="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-purple-500 text-sm font-medium text-white hover:bg-purple-600">
-                    1
-                  </button>
-                  <button className="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50">
-                    2
-                  </button>
-                  <button className="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50">
-                    3
-                  </button>
-                  <button className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
-                    Next
-                  </button>
-                </nav>
-              </div>
+
+              {/* Pagination */}
+              {totalEmployees > employeesPerPage && (
+                <div className="flex justify-center mt-4">
+                  <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                    {currentPage > 1 && (
+                      <button
+                        className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50"
+                        onClick={() => handlePageChange(currentPage - 1)}
+                      >
+                        Previous
+                      </button>
+                    )}
+                    {[...Array(totalPages)].map((_, index) => (
+                      <button
+                        key={index}
+                        className={`relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium ${
+                          currentPage === index + 1
+                            ? 'bg-purple-500 text-white'
+                            : 'bg-white text-gray-700 hover:bg-gray-50'
+                        }`}
+                        onClick={() => handlePageChange(index + 1)}
+                      >
+                        {index + 1}
+                      </button>
+                    ))}
+                    {currentPage < totalPages && (
+                      <button
+                        className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50"
+                        onClick={() => handlePageChange(currentPage + 1)}
+                      >
+                        Next
+                      </button>
+                    )}
+                  </nav>
+                </div>
+              )}
             </div>
           </div>
         </div>
       </main>
+
+      {/* Register Employee Popup */}
+      <RegisterEmployeePopup
+        isOpen={isPopupOpen}
+        onClose={() => setIsPopupOpen(false)}
+        onAddEmployee={handleAddEmployee}
+      />
     </div>
   );
 };
