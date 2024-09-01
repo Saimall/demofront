@@ -1,13 +1,13 @@
 import React from 'react';
 import { Activity } from 'lucide-react';
+import { useNavigate } from 'react-router';
 
 const ManagerRegistrationForm = () => {
+
+    const navigate = useNavigate();
+
   return (
     <div className="min-h-screen flex flex-col">
-      {/* Header */}
-      {/* <header className="bg-blue-600 text-white p-4 w-full">
-        <h1 className="text-xl font-bold">PROJECT MANAGEMENT SYSTEM</h1>
-      </header> */}
       <header className="bg-white shadow-sm">
         <div className="max-w-7xl mx-auto px-4 py-3 sm:px-6 lg:px-8 flex justify-between items-center">
           <div className="flex items-center">
@@ -15,8 +15,8 @@ const ManagerRegistrationForm = () => {
             <h1 className="text-xl font-bold text-gray-900">TaskFlow</h1>
           </div>
           <div>
-            <button className="bg-blue-500 text-white px-4 py-2 rounded-md mr-2 hover:bg-blue-600 transition-colors">Register</button>
-            <button className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition-colors">Login</button>
+            <button className="bg-blue-500 text-white px-4 py-2 rounded-md mr-2 hover:bg-blue-600 transition-colors" onClick={() => navigate("/Login")}>Login</button>
+            <button className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition-colors" onClick={() => navigate("/HomePage")}>Go Back</button>
           </div>
         </div>
       </header>
@@ -53,7 +53,7 @@ const ManagerRegistrationForm = () => {
             </div>
           </form>
           <p className="mt-4 text-center text-sm text-blue-600 hover:underline">
-            <a href="#">Already Have an Account? Login</a>
+            <a href="/Login">Already Have an Account? Login</a>
           </p>
         </div>
       </main>

@@ -1,0 +1,55 @@
+{
+  "projects": [
+    {
+      "id": "PID462",
+      "name": "ANDROID",
+      "startDate": "15/04/2023",
+      "endDate": "15/06/2023",
+      "description": "This is Project Project"
+    },
+    {
+      "id": "PI0913",
+      "name": "BANCHIO",
+      "startDate": "22/05/2023",
+      "endDate": "22/06/2023",
+      "description": "This need to be implemented in SpringBoot"
+    },
+    {
+      "id": "PIA098",
+      "name": "NIRBISA",
+      "startDate": "05/06/2023",
+      "endDate": "15/07/2023",
+      "description": "This is related to Data Science"
+    }
+  ],
+  "employees": [
+    {
+      "id": "E1",
+      "name": "Alice",
+      "email": "alice@gmail.com",
+      "contact": "9922888337",
+      "designation": "Tester"
+    },
+    {
+      "id": "E2",
+      "name": "Bob",
+      "email": "bob@123.com",
+      "contact": "6529888337",
+      "designation": "Developer 1"
+    },
+    {
+      "id": "E3",
+      "name": "Charlie",
+      "email": "charlie@gmail.com",
+      "contact": "9922868337",
+      "designation": "Tester"
+    },
+    {
+      "id": "E4",
+      "name": "Abin",
+      "email": "abin@123.com",
+      "contact": "8822888337",
+      "designation": "Developer 2"
+    }
+  ]
+}
