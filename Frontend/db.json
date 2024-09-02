@@ -38,18 +38,77 @@
       "designation": "Developer 1"
     },
     {
-      "id": "E3",
-      "name": "Charlie",
-      "email": "charlie@gmail.com",
-      "contact": "9922868337",
+      "id": "E4",
+      "name": "Abin",
+      "email": "abin@gmail.com",
+      "contact": "9922868327",
       "designation": "Tester"
     },
     {
-      "id": "E4",
-      "name": "Abin",
-      "email": "abin@123.com",
-      "contact": "8822888337",
-      "designation": "Developer 2"
+      "name": "Nihal",
+      "email": "nihal@gmail.com",
+      "contact": "9988776655",
+      "password": "nihal@123",
+      "designation": "Developer",
+      "id": "bfbk9TZ"
+    },
+    {
+      "name": "Nikhil",
+      "email": "nikhil@gmail.com",
+      "contact": "8282823677",
+      "password": "nikhil",
+      "designation": "Tester 2",
+      "id": "ObWBPOA"
+    },
+    {
+      "name": "Rajesh",
+      "email": "rajesh@gmail.com",
+      "contact": "7788226632",
+      "password": "rajesh",
+      "designation": "QA",
+      "id": "Q1qepOL"
+    }
+  ],
+  "tasks": [
+    {
+      "id": "T002",
+      "taskname": "Develop User Interface",
+      "taskDescription": "Create the main activity layout.",
+      "assignedTo": "E2",
+      "dueDate": "2023-05-05",
+      "priority": "Medium",
+      "status": "In Progress",
+      "projectId": "PID462"
+    },
+    {
+      "id": "T003",
+      "taskname": "Create SpringBoot Project",
+      "taskDescription": "Initialize a new SpringBoot application.",
+      "assignedTo": "bfbk9TZ",
+      "dueDate": "2023-05-25",
+      "priority": "High",
+      "status": "Not Started",
+      "projectId": "PI0913"
+    },
+    {
+      "id": "T004",
+      "taskname": "Implement REST API",
+      "taskDescription": "Develop the RESTful services for the application.",
+      "assignedTo": "bfbk9TZ",
+      "dueDate": "2023-06-10",
+      "priority": "High",
+      "status": "Not Started",
+      "projectId": "PI0913"
+    },
+    {
+      "id": "T005",
+      "taskname": "Data Collection",
+      "taskDescription": "Gather data from various sources for analysis.",
+      "assignedTo": "MWQ0XCd",
+      "dueDate": "2023-06-15",
+      "priority": "Medium",
+      "status": "In Progress",
+      "projectId": "PIA098"
     }
   ]
 }

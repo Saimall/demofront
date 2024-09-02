@@ -5,6 +5,7 @@ import { Activity, Trash2 } from 'lucide-react';
 import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend } from 'chart.js';
 import AddProjectPopup from './AddProjectPopup';
 
+
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
 
 const performanceData = [
@@ -94,6 +95,7 @@ const ManagerDashboard = () => {
       });
   };
 
+
   return (
     <div className="min-h-screen bg-gray-100">
       <header className="bg-white shadow-sm">
@@ -155,7 +157,7 @@ const ManagerDashboard = () => {
                   <td className="px-4 py-2">{project.endDate}</td>
                   <td className="px-4 py-2">{project.description}</td>
                   <td className="px-4 py-2 flex items-center">
-                    <a href="/ManageProject" className="text-blue-500 hover:underline mr-4">
+                    <a href="/ManageProjects" className="text-blue-500 hover:underline mr-4" onClick={() => navigate("/ManageProjects")}>
                       Manage Project
                     </a>
                     <Trash2

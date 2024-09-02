@@ -7,6 +7,8 @@ import ManagerRegistrationForm from './components/ManagerRegistrationForm.js';
 import AddProjectPopup from './components/AddProjectPopup.js';
 import ViewEmployees from './components/ViewEmployees';
 import RegisterEmployeePopup from './components/RegisterEmployeePopup';
+import ManageProjects from './components/ManageProjects';
+import AddTaskPopup from './components/AddTaskPopup';
 
 
 function App() {
@@ -21,6 +23,8 @@ function App() {
           <Route path="/AddProjectPopup" element={<AddProjectPopup/>}></Route>
           <Route path="/ViewEmployees" element={<ViewEmployees/>}></Route>
           <Route path="/RegisterEmployeePopup" element={<RegisterEmployeePopup/>}></Route>
+          <Route path="/ManageProjects" element={<ManageProjects/>}></Route>
+          <Route path="/AddTaskPopup" element={<AddTaskPopup/>}></Route>
         </Routes>
       </BrowserRouter>
     </div>

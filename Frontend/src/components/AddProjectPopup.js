@@ -72,6 +72,32 @@ const AddProjectPopup = ({ onClose, onAddProject }) => {
           onChange={(e) => setEndDate(e.target.value)}
           className="border px-4 py-2 mb-4 w-full"
         />
+
+<div className="relative mb-4">
+  <button
+    className="border px-4 py-2 w-full text-left"
+    onClick={() => setShowEmployeeDropdown(!showEmployeeDropdown)}
+  >
+    Assign Employees
+  </button>
+  {showEmployeeDropdown && (
+    <div className="absolute z-10 w-full bg-white border mt-2 rounded shadow-lg max-h-48 overflow-y-auto">
+      {employees.map((employee) => (
+        <div key={employee.id} className="flex items-center px-4 py-2 hover:bg-gray-100">
+          <input
+            type="checkbox"
+            checked={selectedEmployees.includes(employee.name)}
+            onChange={() => handleToggleEmployeeSelection(employee.name)}
+            className="mr-2"
+          />
+          <span>{employee.name}</span>
+        </div>
+      ))}
+    </div>
+  )}
+</div>
+
+
         <textarea
           placeholder="Project Description"
           value={description}
@@ -79,29 +105,7 @@ const AddProjectPopup = ({ onClose, onAddProject }) => {
           className="border px-4 py-2 mb-4 w-full"
         />
 
-        <div className="relative mb-4">
-          <button
-            className="border px-4 py-2 w-full text-left"
-            onClick={() => setShowEmployeeDropdown(!showEmployeeDropdown)}
-          >
-            Assign Employees
-          </button>
-          {showEmployeeDropdown && (
-            <div className="absolute z-10 w-full bg-white border mt-2 rounded shadow-lg">
-              {employees.map((employee) => (
-                <div key={employee.id} className="flex items-center px-4 py-2 hover:bg-gray-100">
-                  <input
-                    type="checkbox"
-                    checked={selectedEmployees.includes(employee.name)}
-                    onChange={() => handleToggleEmployeeSelection(employee.name)}
-                    className="mr-2"
-                  />
-                  <span>{employee.name}</span>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
+        
 
         <div className="flex justify-end space-x-4">
           <button
