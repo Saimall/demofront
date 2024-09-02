@@ -33,7 +33,7 @@ public class SecurityConfig {
         return http
                 .csrf(customizer -> customizer.disable())
                 .authorizeHttpRequests(request -> request
-                        .requestMatchers("api/v1/login", "api/v1/manager/register").permitAll()
+                        .requestMatchers("api/v1/login", "api/v1/manager/register","api/v1/project/**").permitAll()
                         .requestMatchers(HttpMethod.OPTIONS,"/**").permitAll()
 //                        .requestMatchers(HttpMethod.POST,"/**").permitAll()
                         .anyRequest().authenticated())
