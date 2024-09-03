@@ -4,6 +4,7 @@ import com.example.user_service.dto.EmployeeDto;
 import com.example.user_service.dto.ManagerDashboardDto;
 import com.example.user_service.dto.ManagerDto;
 import com.example.user_service.exceptions.EmployeeNotFoundException;
+import com.example.user_service.exceptions.ManagerAlreadyExistException;
 import com.example.user_service.exceptions.ManagerNotFoundException;
 import com.example.user_service.model.Employee;
 import com.example.user_service.model.Manager;
@@ -27,6 +28,10 @@ public class ManagerController {
         try{
             return ResponseEntity.status(HttpStatus.CREATED)
                     .body(userService.registerManager(managerDto));
+        }
+        catch (ManagerAlreadyExistException e){
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                   .body(null);
         }
         catch(Exception e){
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)

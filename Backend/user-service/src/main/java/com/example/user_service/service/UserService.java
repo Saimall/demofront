@@ -2,6 +2,7 @@ package com.example.user_service.service;
 
 import com.example.user_service.dto.*;
 import com.example.user_service.exceptions.EmployeeNotFoundException;
+import com.example.user_service.exceptions.ManagerAlreadyExistException;
 import com.example.user_service.exceptions.ManagerNotFoundException;
 import com.example.user_service.model.Employee;
 import com.example.user_service.model.Manager;
@@ -43,6 +44,10 @@ public class UserService {
 
     @Transactional
     public Manager registerManager(ManagerDto managerDto) {
+
+        if(managerRepo.existsByEmail(managerDto.getEmail())) {
+            throw new ManagerAlreadyExistException("Manager already exists with this email");
+        }
 
         Manager manager = Manager.builder()
                 .name(managerDto.getName())
