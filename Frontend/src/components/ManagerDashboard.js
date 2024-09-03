@@ -1,58 +1,18 @@
 import React, { useState, useEffect } from 'react';
-import { Line } from 'react-chartjs-2';
+import { Bar } from 'react-chartjs-2';
 import { useNavigate } from 'react-router';
 import { Activity, Trash2 } from 'lucide-react';
-import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend } from 'chart.js';
+import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend } from 'chart.js';
 import AddProjectPopup from './AddProjectPopup';
 
-
-ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
-
-const performanceData = [
-  { name: 'Oct 2022', Project: 4, Target: 3 },
-  { name: 'Nov 2022', Project: 3, Target: 4 },
-  { name: 'Dec 2022', Project: 5, Target: 4 },
-  { name: 'Jan 2023', Project: 4, Target: 5 },
-  { name: 'Feb 2023', Project: 6, Target: 5 },
-  { name: 'Mar 2023', Project: 5, Target: 4 },
-];
+ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
 const ManagerDashboard = () => {
   const [projectData, setProjectData] = useState([]);
+  const [selectedProject, setSelectedProject] = useState(null);
   const [showPopup, setShowPopup] = useState(false);
   const navigate = useNavigate();
   const [scrollToProjects, setScrollToProjects] = useState(false);
-
-  const data = {
-    labels: performanceData.map((item) => item.name),
-    datasets: [
-      {
-        label: 'Project',
-        data: performanceData.map((item) => item.Project),
-        borderColor: '#8884d8',
-        backgroundColor: 'rgba(136, 132, 216, 0.5)',
-      },
-      {
-        label: 'Target',
-        data: performanceData.map((item) => item.Target),
-        borderColor: '#82ca9d',
-        backgroundColor: 'rgba(130, 202, 157, 0.5)',
-      },
-    ],
-  };
-
-  const options = {
-    responsive: true,
-    plugins: {
-      legend: {
-        position: 'top',
-      },
-      title: {
-        display: true,
-        text: 'Performance Over Time',
-      },
-    },
-  };
 
   useEffect(() => {
     if (scrollToProjects) {
@@ -68,8 +28,59 @@ const ManagerDashboard = () => {
     // Fetch initial project data from the server
     fetch('http://localhost:3001/projects')
       .then(response => response.json())
-      .then(data => setProjectData(data));
+      .then(data => {
+        setProjectData(data);
+        // Set the first project as the default selected project
+        if (data.length > 0) {
+          setSelectedProject(data[0]);
+        }
+      });
   }, []);
+
+  useEffect(() => {
+    if (selectedProject) {
+      // Directly use the selected project's tasks
+      const tasks = selectedProject.tasks || [];
+      console.log('Selected project tasks:', tasks); // Log the tasks for debugging
+
+      // Calculate task counts
+      const taskCounts = {
+        todo: tasks.filter(task => task.status === 'To Do').length,
+        inProgress: tasks.filter(task => task.status === 'In Progress').length,
+        completed: tasks.filter(task => task.status === 'Completed').length,
+        overdue: tasks.filter(task => task.status === 'Overdue').length,
+      };
+
+      // Update the chart data
+      const barData = {
+        labels: ['To Do', 'In Progress', 'Completed', 'Overdue'],
+        datasets: [
+          {
+            label: 'Tasks',
+            data: [taskCounts.todo, taskCounts.inProgress, taskCounts.completed, taskCounts.overdue],
+            backgroundColor: ['#1e90ff', '#ffcc00', '#28a745', '#dc3545'],
+          },
+        ],
+      };
+
+      const barOptions = {
+        responsive: true,
+        plugins: {
+          legend: {
+            position: 'top',
+          },
+          title: {
+            display: true,
+            text: `Tasks for ${selectedProject.name}`,
+          },
+        },
+      };
+
+      // Update chart state (if applicable)
+      // e.g., setBarData(barData);
+      // e.g., setBarOptions(barOptions);
+    }
+  }, [selectedProject]);
 
   const handleAddProject = (newProject) => {
     // Post the new project to the server
@@ -82,7 +93,7 @@ const ManagerDashboard = () => {
     })
       .then(response => response.json())
       .then(data => {
-        setProjectData((prevData) => [...prevData, data]);
+        setProjectData(prevData => [...prevData, data]);
       });
   };
 
@@ -91,10 +102,22 @@ const ManagerDashboard = () => {
       method: 'DELETE',
     })
       .then(() => {
-        setProjectData((prevData) => prevData.filter((p) => p.id !== projectId));
+        setProjectData(prevData => {
+          const updatedData = prevData.filter(p => p.id !== projectId);
+          // Reset selected project to the first in the list if deleted
+          if (selectedProject?.id === projectId) {
+            setSelectedProject(updatedData.length > 0 ? updatedData[0] : null);
+          }
+          return updatedData;
+        });
       });
   };
 
+  const handleProjectSelect = (e) => {
+    const projectId = e.target.value;
+    const selected = projectData.find(p => p.id === projectId);
+    setSelectedProject(selected);
+  };
 
   return (
     <div className="min-h-screen bg-gray-100">
@@ -116,21 +139,62 @@ const ManagerDashboard = () => {
         <div className="grid grid-cols-3 gap-6 mb-6">
           <div className="col-span-2 bg-white p-4 rounded-lg shadow">
             <h3 className="text-lg font-semibold mb-4">Performance</h3>
-            <Line data={data} options={options} />
+            <select
+              onChange={handleProjectSelect}
+              className="mb-4 p-2 border rounded w-full max-w-sm"
+            >
+              <option value="">Select a Project</option>
+              {projectData.map(project => (
+                <option key={project.id} value={project.id}>
+                  {project.name}
+                </option>
+              ))}
+            </select>
+            {selectedProject && (
+              <Bar
+                data={{
+                  labels: ['To Do', 'In Progress', 'Completed', 'Overdue'],
+                  datasets: [
+                    {
+                      label: 'Tasks',
+                      data: [
+                        selectedProject.tasks.filter(task => task.status === 'To Do').length,
+                        selectedProject.tasks.filter(task => task.status === 'In Progress').length,
+                        selectedProject.tasks.filter(task => task.status === 'Completed').length,
+                        selectedProject.tasks.filter(task => task.status === 'Overdue').length,
+                      ],
+                      backgroundColor: ['#1e90ff', '#ffcc00', '#28a745', '#dc3545'],
+                    },
+                  ],
+                }}
+                options={{
+                  responsive: true,
+                  plugins: {
+                    legend: {
+                      position: 'top',
+                    },
+                    title: {
+                      display: true,
+                      text: `Tasks for ${selectedProject.name}`,
+                    },
+                  },
+                }}
+              />
+            )}
           </div>
 
-          <div className="bg-white p-4 rounded-lg shadow flex flex-col justify-between" style={{ height: '200px' }}>
-            <div>
-              <h3 className="text-lg font-semibold mb-4">User Profile</h3>
+          <div className="bg-white p-4 rounded-lg shadow flex flex-col justify-between" style={{ height: '300px' }}>
+            <div className="flex flex-col">
+              <h3 className="flex flex-col items-center text-lg font-semibold mb-4">Manager Profile</h3>
               <p><strong>Name:</strong> Abc</p>
-              <p><strong>Email ID:</strong> abc@gmail.com</p>
+              <p className="py-2"><strong>Email ID:</strong> abc@gmail.com</p>
               <p><strong>Contact:</strong> 8292726378</p>
             </div>
             <button
               className="bg-blue-500 text-white px-4 py-2 rounded-md mt-4 hover:bg-blue-600 transition-colors"
               onClick={() => setScrollToProjects(true)}
             >
-              Projects
+              My Projects
             </button>
           </div>
         </div>
@@ -157,13 +221,15 @@ const ManagerDashboard = () => {
                   <td className="px-4 py-2">{project.endDate}</td>
                   <td className="px-4 py-2">{project.description}</td>
                   <td className="px-4 py-2 flex items-center">
-                    <a href="/ManageProjects" className="text-blue-500 hover:underline mr-4" onClick={() => navigate("/ManageProjects")}>
+                    <a href= "/ManageProjects" className="text-blue-500 hover:underline mr-4">
                       Manage Project
-                    </a>
-                    <Trash2
-                      className="text-red-500 cursor-pointer hover:text-red-700"
+                      </a>
+                    <button
+                      className="text-red-500 hover:text-red-700"
                       onClick={() => handleDeleteProject(project.id)}
-                    />
+                    >
+                      <Trash2 className="h-5 w-5" />
+                    </button>
                   </td>
                 </tr>
               ))}
@@ -173,18 +239,21 @@ const ManagerDashboard = () => {
 
         <div className="flex justify-center space-x-4">
           <button
-            className="bg-blue-500 text-white px-4 py-2 rounded-md mr-2 hover:bg-blue-600 transition-colors"
+            className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600"
             onClick={() => setShowPopup(true)}
           >
-            + Add Project
+           + Add Project
           </button>
-          <button className="bg-blue-500 text-white px-4 py-2 rounded-md mr-2 hover:bg-blue-600 transition-colors" onClick={()=>navigate("/ViewEmployees")}>View Employees</button>
+          <button className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600" onClick={()=>navigate("/ViewEmployees")}>
+            View Employee
+          </button>
         </div>
 
         {showPopup && (
           <AddProjectPopup
             onClose={() => setShowPopup(false)}
             onAddProject={handleAddProject}
+            employees={[]} // Pass the employee list if needed
           />
         )}
       </main>

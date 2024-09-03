@@ -9,6 +9,11 @@ import ViewEmployees from './components/ViewEmployees';
 import RegisterEmployeePopup from './components/RegisterEmployeePopup';
 import ManageProjects from './components/ManageProjects';
 import AddTaskPopup from './components/AddTaskPopup';
+import EditTaskPopup from './components/EditTaskPopup';
+import EmployeeDashboard from './components/EmployeeDashboard';
+import ViewTasks from './components/ViewTasks';
+import ErrorPage from './components/ErrorPage';
+
 
 
 function App() {
@@ -25,6 +30,10 @@ function App() {
           <Route path="/RegisterEmployeePopup" element={<RegisterEmployeePopup/>}></Route>
           <Route path="/ManageProjects" element={<ManageProjects/>}></Route>
           <Route path="/AddTaskPopup" element={<AddTaskPopup/>}></Route>
+          <Route path="/EditTaskPopup" element={<EditTaskPopup/>}></Route>
+          <Route path="/EmployeeDashboard" element={<EmployeeDashboard/>}></Route>
+          <Route path="/ViewTasks" element={<ViewTasks/>}></Route>
+          <Route path="/ErrorPage" element={<ErrorPage/>}></Route>
         </Routes>
       </BrowserRouter>
     </div>

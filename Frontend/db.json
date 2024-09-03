@@ -5,21 +5,51 @@
       "name": "ANDROID",
       "startDate": "15/04/2023",
       "endDate": "15/06/2023",
-      "description": "This is Project Project"
+      "description": "This is Project Project",
+      "tasks": [
+        {
+          "id": "T001",
+          "name": "Setup Android Environment",
+          "status": "Completed"
+        },
+        {
+          "id": "T002",
+          "name": "Develop User Interface",
+          "status": "In Progress"
+        }
+      ]
     },
     {
       "id": "PI0913",
       "name": "BANCHIO",
       "startDate": "22/05/2023",
       "endDate": "22/06/2023",
-      "description": "This need to be implemented in SpringBoot"
+      "description": "This need to be implemented in SpringBoot",
+      "tasks": [
+        {
+          "id": "T003",
+          "name": "Create SpringBoot Project",
+          "status": "To Do"
+        },
+        {
+          "id": "T004",
+          "name": "Implement REST API",
+          "status": "To Do"
+        }
+      ]
     },
     {
-      "id": "PIA098",
-      "name": "NIRBISA",
-      "startDate": "05/06/2023",
-      "endDate": "15/07/2023",
-      "description": "This is related to Data Science"
+      "name": "spring",
+      "startDate": "2024-09-03",
+      "endDate": "2024-09-07",
+      "description": "Project description",
+      "assignedTo": [
+        "Abin",
+        "Nihal",
+        "Nikhil",
+        "Rajesh"
+      ],
+      "id": "ddOejJq"
     }
   ],
   "employees": [
@@ -45,70 +75,28 @@
       "designation": "Tester"
     },
     {
+      "id": "bfbk9TZ",
       "name": "Nihal",
       "email": "nihal@gmail.com",
       "contact": "9988776655",
       "password": "nihal@123",
-      "designation": "Developer",
-      "id": "bfbk9TZ"
+      "designation": "Developer"
     },
     {
+      "id": "MWQ0XCd",
       "name": "Nikhil",
       "email": "nikhil@gmail.com",
-      "contact": "8282823677",
+      "contact": "9992726533",
       "password": "nikhil",
-      "designation": "Tester 2",
-      "id": "ObWBPOA"
+      "designation": "Tester 2"
     },
     {
+      "id": "Q1qepOL",
       "name": "Rajesh",
       "email": "rajesh@gmail.com",
       "contact": "7788226632",
       "password": "rajesh",
-      "designation": "QA",
-      "id": "Q1qepOL"
-    }
-  ],
-  "tasks": [
-    {
-      "id": "T002",
-      "taskname": "Develop User Interface",
-      "taskDescription": "Create the main activity layout.",
-      "assignedTo": "E2",
-      "dueDate": "2023-05-05",
-      "priority": "Medium",
-      "status": "In Progress",
-      "projectId": "PID462"
-    },
-    {
-      "id": "T003",
-      "taskname": "Create SpringBoot Project",
-      "taskDescription": "Initialize a new SpringBoot application.",
-      "assignedTo": "bfbk9TZ",
-      "dueDate": "2023-05-25",
-      "priority": "High",
-      "status": "Not Started",
-      "projectId": "PI0913"
-    },
-    {
-      "id": "T004",
-      "taskname": "Implement REST API",
-      "taskDescription": "Develop the RESTful services for the application.",
-      "assignedTo": "bfbk9TZ",
-      "dueDate": "2023-06-10",
-      "priority": "High",
-      "status": "Not Started",
-      "projectId": "PI0913"
-    },
-    {
-      "id": "T005",
-      "taskname": "Data Collection",
-      "taskDescription": "Gather data from various sources for analysis.",
-      "assignedTo": "MWQ0XCd",
-      "dueDate": "2023-06-15",
-      "priority": "Medium",
-      "status": "In Progress",
-      "projectId": "PIA098"
+      "designation": "QA"
     }
   ]
 }
