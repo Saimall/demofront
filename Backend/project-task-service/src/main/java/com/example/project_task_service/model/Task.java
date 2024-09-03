@@ -27,7 +27,7 @@ public class Task {
     @Enumerated(value = EnumType.STRING)
     private Status status;
 
-    private Long employeeId; //from feign client(Assigned to)
+    private Long employeeId; //(Assigned to)
 
     private LocalDate createdAt;
     private LocalDate updatedAt;
