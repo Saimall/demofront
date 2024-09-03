@@ -95,14 +95,17 @@ public class UserService {
             Optional<User> existingUser = userRepo.findByEmail(user.getEmail());
             if (existingUser.isPresent() && existingUser.get().getRole() == UserRole.MANAGER) {
                 Manager existingManager = managerRepo.findByEmail(existingUser.get().getEmail());
-                return new AuthenticationResponse(token, existingManager.getManagerId());
+                return new AuthenticationResponse(token, existingManager.getManagerId(), existingUser.get().getRole() );
             } else if (existingUser.isPresent() && existingUser.get().getRole() == UserRole.EMPLOYEE) {
                 Employee existingEmployee = employeeRepo.findByEmail(existingUser.get().getEmail());
-                return new AuthenticationResponse(token, existingEmployee.getEmpId());
+                return new AuthenticationResponse(token, existingEmployee.getEmpId(),existingUser.get().getRole());
+            }
+            else{
+                throw new EmployeeNotFoundException("User not found.");
             }
 
         }
-        return new AuthenticationResponse("Failed", null);
+        return new AuthenticationResponse("Failed", null,null);
 
     }
 

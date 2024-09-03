@@ -37,19 +37,6 @@
           "status": "To Do"
         }
       ]
-    },
-    {
-      "name": "spring",
-      "startDate": "2024-09-03",
-      "endDate": "2024-09-07",
-      "description": "Project description",
-      "assignedTo": [
-        "Abin",
-        "Nihal",
-        "Nikhil",
-        "Rajesh"
-      ],
-      "id": "ddOejJq"
     }
   ],
   "employees": [

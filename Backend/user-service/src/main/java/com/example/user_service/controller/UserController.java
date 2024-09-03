@@ -1,9 +1,13 @@
 package com.example.user_service.controller;
 
 import com.example.user_service.dto.AuthenticationResponse;
+import com.example.user_service.exceptions.EmployeeNotFoundException;
 import com.example.user_service.model.User;
 import com.example.user_service.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
 
 
@@ -16,8 +20,17 @@ public class UserController {
 
 
     @PostMapping("/login")
-    public AuthenticationResponse login(@RequestBody User user) {
-        return service.verify(user);
+    public ResponseEntity<AuthenticationResponse> login(@RequestBody User user) {
+
+        try {
+            return ResponseEntity.ok(service.verify(user));
+        }
+        catch (EmployeeNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+        }
+        catch (UsernameNotFoundException e){
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
+        }
     }
 
 

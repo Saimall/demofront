@@ -3,6 +3,7 @@ import { Bar } from 'react-chartjs-2';
 import { useNavigate } from 'react-router';
 import { Activity, Trash2 } from 'lucide-react';
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend } from 'chart.js';
+import axios from 'axios';
 import AddProjectPopup from './AddProjectPopup';
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
@@ -11,6 +12,7 @@ const ManagerDashboard = () => {
   const [projectData, setProjectData] = useState([]);
   const [selectedProject, setSelectedProject] = useState(null);
   const [showPopup, setShowPopup] = useState(false);
+  const [managerDetails, setManagerDetails] = useState({});
   const navigate = useNavigate();
   const [scrollToProjects, setScrollToProjects] = useState(false);
 
@@ -39,11 +41,8 @@ const ManagerDashboard = () => {
 
   useEffect(() => {
     if (selectedProject) {
-      // Directly use the selected project's tasks
       const tasks = selectedProject.tasks || [];
-      console.log('Selected project tasks:', tasks); // Log the tasks for debugging
 
-      // Calculate task counts
       const taskCounts = {
         todo: tasks.filter(task => task.status === 'To Do').length,
         inProgress: tasks.filter(task => task.status === 'In Progress').length,
@@ -51,7 +50,6 @@ const ManagerDashboard = () => {
         overdue: tasks.filter(task => task.status === 'Overdue').length,
       };
 
-      // Update the chart data
       const barData = {
         labels: ['To Do', 'In Progress', 'Completed', 'Overdue'],
         datasets: [
@@ -75,15 +73,30 @@ const ManagerDashboard = () => {
           },
         },
       };
-
-      // Update chart state (if applicable)
-      // e.g., setBarData(barData);
-      // e.g., setBarOptions(barOptions);
     }
   }, [selectedProject]);
 
+  useEffect(() => {
+    const fetchManagerDetails = async () => {
+      const managerId = localStorage.getItem('userId');
+      const jwtToken = localStorage.getItem('jwtToken');
+      
+      try {
+        const response = await axios.get(`http://localhost:9093/api/v1/manager/viewManagerDetails/${managerId}`, {
+          headers: {
+            Authorization: `Bearer ${jwtToken}`,
+          },
+        });
+        setManagerDetails(response.data);
+      } catch (error) {
+        console.error('Error fetching manager details:', error);
+      }
+    };
+
+    fetchManagerDetails();
+  }, []);
+
   const handleAddProject = (newProject) => {
-    // Post the new project to the server
     fetch('http://localhost:3001/projects', {
       method: 'POST',
       headers: {
@@ -104,7 +117,6 @@ const ManagerDashboard = () => {
       .then(() => {
         setProjectData(prevData => {
           const updatedData = prevData.filter(p => p.id !== projectId);
-          // Reset selected project to the first in the list if deleted
           if (selectedProject?.id === projectId) {
             setSelectedProject(updatedData.length > 0 ? updatedData[0] : null);
           }
@@ -186,9 +198,9 @@ const ManagerDashboard = () => {
           <div className="bg-white p-4 rounded-lg shadow flex flex-col justify-between" style={{ height: '300px' }}>
             <div className="flex flex-col">
               <h3 className="flex flex-col items-center text-lg font-semibold mb-4">Manager Profile</h3>
-              <p><strong>Name:</strong> Abc</p>
-              <p className="py-2"><strong>Email ID:</strong> abc@gmail.com</p>
-              <p><strong>Contact:</strong> 8292726378</p>
+              <p><strong>Name:</strong> {managerDetails.name}</p>
+              <p className="py-2"><strong>Email ID:</strong> {managerDetails.email}</p>
+              <p><strong>Contact:</strong> {managerDetails.contact}</p>
             </div>
             <button
               className="bg-blue-500 text-white px-4 py-2 rounded-md mt-4 hover:bg-blue-600 transition-colors"
