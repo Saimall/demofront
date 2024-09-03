@@ -12,6 +12,21 @@ spring:
       discovery:
         locator:
           enabled: true
+      globalcors:
+        corsConfigurations:
+          '[/**]': # Apply to all routes
+            allowedOrigins:
+              - "http://localhost:3000" # Your frontend origin
+            allowedMethods:
+              - GET
+              - POST
+              - PUT
+              - DELETE
+              - OPTIONS
+            allowedHeaders:
+              - "*" # Allow all headers
+            allowCredentials: true # Allow cookies/authentication
+
       mvc:
         routes:
           - id: user-service
@@ -22,3 +37,15 @@ spring:
             uri: lb://project-task-service
             predicates:
               - Path=/api/v2/**
+
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  endpoint:
+    health:
+      show-details: always
+    gateway:
+      enabled: true
