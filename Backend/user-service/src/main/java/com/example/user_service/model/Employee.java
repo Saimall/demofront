@@ -24,7 +24,7 @@ public class Employee {
     private String contact;
     private String designation;
     @JsonBackReference
-    @ManyToOne(cascade = CascadeType.ALL,fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "manager_id")
     private Manager manager;
 }

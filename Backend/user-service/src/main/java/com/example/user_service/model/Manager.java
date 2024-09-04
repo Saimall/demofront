@@ -22,8 +22,7 @@ public class Manager {
     private String email;
 //    private String password;
     private String contact;
-    @OneToMany(mappedBy ="manager")
+    @OneToMany(mappedBy ="manager",cascade = CascadeType.ALL, orphanRemoval = true, fetch=FetchType.LAZY)
     @JsonManagedReference
-
     private List<Employee> employees;
 }

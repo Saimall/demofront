@@ -34,7 +34,7 @@ public class Task {
     private LocalDate completedAt;
 
     @JsonBackReference
-    @ManyToOne(cascade = CascadeType.ALL,fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "project_id")
     private Project project;
 

@@ -30,7 +30,7 @@ public class Project {
     private LocalDate createdAt;
     private LocalDate updatedAt;
 
-    @OneToMany(mappedBy ="project")
+    @OneToMany(mappedBy ="project", cascade = CascadeType.ALL, orphanRemoval = true, fetch=FetchType.LAZY)
     @JsonManagedReference
     private List<Task> tasks;
 }
