@@ -15,6 +15,8 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class TaskService {
@@ -54,6 +56,7 @@ public class TaskService {
         }
 
         return tasks.stream().map(task -> TaskResponseDto.builder()
+                .taskId(task.getTaskId())
                 .taskTitle(task.getTaskTitle())
                 .taskDescription(task.getTaskDescription())
                 .dueDate(task.getDueDate())
@@ -70,6 +73,7 @@ public class TaskService {
         }
 
         return tasks.stream().map(task -> TaskResponseDto.builder()
+                .taskId(task.getTaskId())
                 .taskTitle(task.getTaskTitle())
                 .taskDescription(task.getTaskDescription())
                 .dueDate(task.getDueDate())
@@ -86,6 +90,7 @@ public class TaskService {
         }
 
         return tasks.stream().map(task -> TaskResponseDto.builder()
+                .taskId(task.getTaskId())
                 .taskTitle(task.getTaskTitle())
                 .taskDescription(task.getTaskDescription())
                 .dueDate(task.getDueDate())
@@ -102,6 +107,7 @@ public class TaskService {
         }
 
         return tasks.stream().map(task -> TaskResponseDto.builder()
+                .taskId(task.getTaskId())
                 .taskTitle(task.getTaskTitle())
                 .taskDescription(task.getTaskDescription())
                 .dueDate(task.getDueDate())
@@ -124,6 +130,7 @@ public class TaskService {
         taskRepository.save(existingTask);
 
         return TaskResponseDto.builder()
+                .taskId(existingTask.getTaskId())
                 .taskTitle(existingTask.getTaskTitle())
                 .taskDescription(existingTask.getTaskDescription())
                 .dueDate(existingTask.getDueDate())
@@ -143,6 +150,7 @@ public class TaskService {
         taskRepository.save(existingTask);
 
         return TaskResponseDto.builder()
+                .taskId(existingTask.getTaskId())
                 .taskTitle(existingTask.getTaskTitle())
                 .taskDescription(existingTask.getTaskDescription())
                 .dueDate(existingTask.getDueDate())
@@ -166,4 +174,23 @@ public class TaskService {
 
         return "Task deleted successfully with ID " + taskId;
     }
-}
+
+
+
+    public List<TaskResponseDto> getTasksByEmployeeId(Long employeeId) {
+            List<Task> tasks = taskRepository.findByEmployeeId(employeeId);
+            if (tasks.isEmpty()) {
+                throw new TaskNotFoundException("No tasks found for employee with ID " + employeeId);
+            }
+
+            return tasks.stream().map(task -> TaskResponseDto.builder()
+                    .taskId(task.getTaskId())
+                    .taskTitle(task.getTaskTitle())
+                    .taskDescription(task.getTaskDescription())
+                    .dueDate(task.getDueDate())
+                    .priority(task.getPriority())
+                    .employeeId(task.getEmployeeId())
+                    .status(task.getStatus())
+                    .build()).toList();
+        }
+    }

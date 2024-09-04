@@ -1,13 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-
 const AddTaskPopup = ({ onClose, onTaskAdded }) => {
   const [task, setTask] = useState({
-    taskname: '',
-    description: '',
+    taskTitle: '',
+    taskDescription: '',
     dueDate: '',
-    priority: 'Low',
-    assignedTo: ''
+    priority: 'LOW',
+    employeeId: ''
   });
   const [employees, setEmployees] = useState([]);
   const [error, setError] = useState('');
@@ -16,28 +15,77 @@ const AddTaskPopup = ({ onClose, onTaskAdded }) => {
     fetchEmployees();
   }, []);
 
-  const fetchEmployees = () => {
-    axios.get('http://localhost:3001/employees')
-      .then(response => setEmployees(response.data))
-      .catch(error => console.error('Error fetching employees:', error));
+  const fetchEmployees = async () => {
+    const managerId = localStorage.getItem('userId');
+    const jwtToken = localStorage.getItem('jwtToken');
+
+    try {
+      const response = await fetch(`http://localhost:9093/api/v1/manager/${managerId}/viewEmployees`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${jwtToken}`,
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      if (!response.ok) {
+        throw new Error('Error fetching employees');
+      }
+
+      const data = await response.json();
+      setEmployees(data);
+    } catch (error) {
+      console.error('Error fetching employees:', error);
+    }
   };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setTask({ ...task, [name]: value });
+    setTask(prevTask => ({
+      ...prevTask,
+      [name]: name === 'employeeId' ? Number(value) : value
+    }));
   };
 
-  const handleSubmit = () => {
-    if (Object.values(task).some(value => value === '')) {
+  const handleSubmit = async () => {
+    // Ensure dueDate is formatted correctly for LocalDate (YYYY-MM-DD)
+    const formattedDueDate = new Date(task.dueDate).toISOString().split('T')[0];
+
+    // Ensure priority matches expected enum values
+    const validPriorities = ['LOW', 'MEDIUM', 'HIGH'];
+    const formattedPriority = validPriorities.includes(task.priority) ? task.priority : 'LOW';
+
+    const requestData = {
+      ...task,
+      dueDate: formattedDueDate,
+      priority: formattedPriority
+    };
+
+    if (Object.values(requestData).some(value => value === '')) {
       setError('Please fill in all fields');
       return;
     }
-    axios.post('http://localhost:3001/tasks', task)
-      .then(() => {
-        onTaskAdded();
-        onClose();
-      })
-      .catch(error => console.error('Error adding task:', error));
+
+    const projectId = localStorage.getItem('projectId');
+    
+    try {
+      requestData.employeeId = parseInt(requestData.employeeId)
+      console.log(projectId)
+      const response = await axios.post(`http://localhost:9093/api/v2/task/addTask/${projectId}`, requestData, {
+        headers: {
+          'Content-Type': 'application/json',
+          // Uncomment if you need authorization
+          // 'Authorization': `Bearer ${localStorage.getItem('jwtToken')}`,
+        },
+      });
+  
+      console.log('Task created successfully:', response.data);
+      onTaskAdded(); // Call the callback to update the UI
+      onClose(); // Close the modal or popup
+    } catch (error) {
+      console.error('Error adding task:', error);
+      setError('Failed to add task');
+    }
   };
 
   return (
@@ -50,8 +98,8 @@ const AddTaskPopup = ({ onClose, onTaskAdded }) => {
             <label className="block text-sm font-medium text-gray-700">Task Name</label>
             <input
               type="text"
-              name="taskname"
-              value={task.taskname}
+              name="taskTitle"
+              value={task.taskTitle}
               onChange={handleInputChange}
               className="mt-1 p-2 border border-gray-300 rounded w-full"
             />
@@ -74,22 +122,22 @@ const AddTaskPopup = ({ onClose, onTaskAdded }) => {
               onChange={handleInputChange}
               className="mt-1 p-2 border border-gray-300 rounded w-full"
             >
-              <option value="Low">Low</option>
-              <option value="Medium">Medium</option>
-              <option value="High">High</option>
+              <option value="LOW">Low</option>
+              <option value="MEDIUM">Medium</option>
+              <option value="HIGH">High</option>
             </select>
           </div>
           <div className="mb-4">
             <label className="block text-sm font-medium text-gray-700">Assign To</label>
             <select
-              name="assignedTo"
-              value={task.assignedTo}
+              name="employeeId"
+              value={task.employeeId}
               onChange={handleInputChange}
-              className="mt-1 p-2 border border-gray-300 rounded w-full  max-h-48 overflow-y-auto"
+              className="mt-1 p-2 border border-gray-300 rounded w-full max-h-48 overflow-y-auto"
             >
               <option value="">Select an employee</option>
               {employees.map(employee => (
-                <option key={employee.id} value={employee.name}>
+                <option key={employee.empId} value={employee.empId}>
                   {employee.name}
                 </option>
               ))}
@@ -99,8 +147,8 @@ const AddTaskPopup = ({ onClose, onTaskAdded }) => {
         <div className="mb-4">
           <label className="block text-sm font-medium text-gray-700">Task Description</label>
           <textarea
-            name="description"
-            value={task.description}
+            name="taskDescription"
+            value={task.taskDescription}
             onChange={handleInputChange}
             className="mt-1 p-2 border border-gray-300 rounded w-full"
           />

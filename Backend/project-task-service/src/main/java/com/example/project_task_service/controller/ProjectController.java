@@ -30,27 +30,16 @@ public class ProjectController {
     public ResponseEntity<?> getProjectsByManager(@PathVariable Long managerId) {
         try {
             List<ProjectDto> projects = projectService.getProjectsByManager(managerId);
-
-            // If the list is empty, return a 204 No Content with a custom message
             if (projects.isEmpty()) {
                 return ResponseEntity.status(HttpStatus.NO_CONTENT)
                         .body("No projects found under this manager");
             }
-
-            // Return the list of projects with a 200 OK status
             return ResponseEntity.status(HttpStatus.OK).body(projects);
 
         }
         catch (ProjectNotFoundException e) {
-            // Handle the specific exception if no projects are found
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body("No projects found under this manager");
-
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No projects found under this manager");
         }
-//        catch (Exception e) {
-//            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-//                    .body(null);
-//        }
     }
 
     //Each Project has unique project ID, So when we delete  by project id it is associated with particular manager only

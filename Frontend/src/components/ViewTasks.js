@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Edit, Activity, List, Grid } from 'lucide-react';
-import { useNavigate } from 'react-router';
+import { useNavigate, useParams } from 'react-router';
 import axios from 'axios';
 import { Draggable, Droppable, DragDropContext } from 'react-beautiful-dnd';
 
@@ -9,7 +9,7 @@ const EditTaskPopup = ({ task, onClose, onSave }) => {
   const [status, setStatus] = useState(task.status);
 
   const handleSubmit = () => {
-    onSave(task.id, status);
+    onSave(task.taskId, status);
     onClose();
   };
 
@@ -25,10 +25,10 @@ const EditTaskPopup = ({ task, onClose, onSave }) => {
             onChange={(e) => setStatus(e.target.value)}
             className="border rounded px-2 py-1 w-full"
           >
-            <option value="To Do">To Do</option>
-            <option value="In Progress">In Progress</option>
-            <option value="Completed">Completed</option>
-            <option value="OverDue">OverDue</option>
+            <option value="TODO">To Do</option>
+            <option value="IN_PROGRESS">In Progress</option>
+            <option value="COMPLETED">Completed</option>
+            <option value="OVERDUE">Overdue</option>
           </select>
         </div>
         <div className="flex justify-end space-x-4">
@@ -52,6 +52,7 @@ const EditTaskPopup = ({ task, onClose, onSave }) => {
 
 // Main TaskManagement Component
 const TaskManagement = () => {
+  const { projectId } = useParams();
   const [searchDate, setSearchDate] = useState('');
   const [tasks, setTasks] = useState([]);
   const [filteredTasks, setFilteredTasks] = useState([]);
@@ -62,14 +63,16 @@ const TaskManagement = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Fetch tasks from the API
-    axios.get('http://localhost:3001/tasks')
-      .then(response => {
-        setTasks(response.data);
-        setFilteredTasks(response.data); // Initialize filteredTasks
-      })
-      .catch(error => console.error('Error fetching tasks:', error));
-  }, []);
+    if (projectId) {
+      // Fetch tasks based on projectId from the API
+      axios.get(`http://localhost:9093/api/v2/task/getTaskByProjectId/${projectId}`)
+        .then(response => {
+          setTasks(response.data);
+          setFilteredTasks(response.data); // Initialize filteredTasks
+        })
+        .catch(error => console.error('Error fetching tasks:', error));
+    }
+  }, [projectId]);
 
   useEffect(() => {
     if (searchDate) {
@@ -93,16 +96,16 @@ const TaskManagement = () => {
     setFilteredTasks(updatedTasks); // Update filteredTasks to reflect changes
 
     // Optionally send update to the server
-    axios.put(`http://localhost:3001/tasks/${movedTask.id}`, movedTask)
+    axios.put(`http://localhost:9092/api/v2/task/updateTaskStatus/${movedTask.taskId}/${movedTask.status}`)
       .catch(error => console.error('Error updating task status:', error));
   };
 
   const getStatusColor = (status) => {
     switch (status) {
-      case 'To Do': return 'bg-blue-100 text-blue-800';
-      case 'In Progress': return 'bg-orange-100 text-orange-800';
-      case 'OverDue': return 'bg-red-100 text-red-800';
-      case 'Completed': return 'bg-green-100 text-green-800';
+      case 'TODO': return 'bg-blue-100 text-blue-800';
+      case 'IN_PROGRESS': return 'bg-orange-100 text-orange-800';
+      case 'OVERDUE': return 'bg-red-100 text-red-800';
+      case 'COMPLETED': return 'bg-green-100 text-green-800';
       default: return 'bg-gray-100 text-gray-800';
     }
   };
@@ -113,13 +116,18 @@ const TaskManagement = () => {
   };
 
   const handleSave = (taskId, status) => {
+    // Update local state with the new status
     const updatedTasks = tasks.map(task =>
-      task.id === taskId ? { ...task, status } : task
+      task.taskId === taskId ? { ...task, status } : task
     );
     setTasks(updatedTasks);
     setFilteredTasks(updatedTasks); // Update filteredTasks to reflect changes
 
-    axios.put(`http://localhost:3001/tasks/${taskId}`, { ...selectedTask, status })
+    // Send updated status to the backend
+    axios.put(`http://localhost:9092/api/v2/task/updateTaskStatus/${taskId}/${status}`)
+      .then(response => {
+        // Optionally handle the response, e.g., show a success message
+      })
       .catch(error => console.error('Error updating task status:', error));
   };
 
@@ -139,9 +147,9 @@ const TaskManagement = () => {
         <tbody>
           {filteredTasks.length > 0 ? (
             filteredTasks.map((task) => (
-              <tr key={task.id} className="border-b hover:bg-gray-50 transition-colors">
-                <td className="py-3 px-6">{task.id}</td>
-                <td className="py-3 px-6">{task.taskname}</td>
+              <tr key={task.taskId} className="border-b hover:bg-gray-50 transition-colors">
+                <td className="py-3 px-6">{task.taskId}</td>
+                <td className="py-3 px-6">{task.taskTitle}</td>
                 <td className="py-3 px-6">{task.dueDate}</td>
                 <td className="py-3 px-6">{task.priority}</td>
                 <td className="py-3 px-6">
@@ -181,7 +189,7 @@ const TaskManagement = () => {
   const boardView = (
     <DragDropContext onDragEnd={handleDragEnd}>
       <div className="flex space-x-4">
-        {['To Do', 'In Progress', 'Completed', 'Overdue'].map(status => (
+        {['TODO', 'IN_PROGRESS', 'COMPLETED', 'OVERDUE'].map(status => (
           <Droppable key={status} droppableId={status}>
             {(provided) => (
               <div
@@ -191,7 +199,7 @@ const TaskManagement = () => {
               >
                 <h2 className="text-xl font-bold mb-4">{status}</h2>
                 {filteredTasks.filter(task => task.status === status).map((task, index) => (
-                  <Draggable key={task.id} draggableId={task.id} index={index}>
+                  <Draggable key={task.taskId} draggableId={task.taskId} index={index}>
                     {(provided) => (
                       <div
                         ref={provided.innerRef}
@@ -199,7 +207,7 @@ const TaskManagement = () => {
                         {...provided.dragHandleProps}
                         className={`mb-4 p-4 rounded ${getStatusColor(task.status)}`}
                       >
-                        <h3 className="font-semibold">{task.taskname}</h3>
+                        <h3 className="font-semibold">{task.taskTitle}</h3>
                         <p>{task.dueDate}</p>
                         <p>Priority: {task.priority}</p>
                       </div>

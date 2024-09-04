@@ -5,6 +5,9 @@ import { Activity } from 'lucide-react';
 import { useNavigate } from 'react-router';
 import axios from 'axios';
 
+const empId = localStorage.getItem('userId');
+const jwtToken = localStorage.getItem('jwtToken');
+
 const EmployeeDashboard = () => {
   const [taskData, setTaskData] = useState({
     labels: ['Completed', 'To do', 'In Progress', 'Over Due'],
@@ -15,41 +18,106 @@ const EmployeeDashboard = () => {
     labels: ['Low', 'Medium', 'High'],
     datasets: [{ data: [0, 0, 0], backgroundColor: ['#10B981', '#F59E0B', '#EF4444'] }],
   });
+  const [employeeDetails, setEmployeeDetails] = useState({});
 
   const navigate = useNavigate();
-  const employeeId = 1; // Replace with the actual employee ID
+
+
+//fetching employee detaiils
+  useEffect(() => {
+    const fetchEmployeeDetails = async () => { 
+      try {
+        const response = await axios.get(`http://localhost:9093/api/v1/employee/viewEmployeeDetails/${empId}`, {
+          headers: {
+            Authorization: `Bearer ${jwtToken}`,
+          },
+        });
+        setEmployeeDetails(response.data);
+      } catch (error) {
+        console.error('Error fetching employee details:', error);
+      }
+    };
+
+    fetchEmployeeDetails();
+  }, []);
+
+
+
+
 
   useEffect(() => {
-    axios.get(`http://localhost:3001/tasks?employeeId=${employeeId}`)
-      .then((response) => {
-        const tasks = response.data;
-        const completed = tasks.filter(task => task.status === 'Completed').length;
-        const pending = tasks.filter(task => task.status === 'To do').length;
-        const inProgress = tasks.filter(task => task.status === 'In Progress').length;
-        const overdue = tasks.filter(task => new Date(task.dueDate) < new Date() && task.status !== 'Completed').length;
-
-        setTaskData({
-          labels: ['Completed', 'To do', 'In Progress', 'Over Due'],
-          datasets: [{
-            data: [completed, pending, inProgress, overdue],
-            backgroundColor: ['#10B981', '#6366F1', '#F59E0B', '#EF4444'],
-          }],
+    // Ensure empId is valid before making the request
+    if (empId) {
+      axios.get(`http://localhost:9093/api/v2/task/getTasksByEmployeeId/${empId}`)
+        .then((response) => {
+          const tasks = response.data;
+  
+          // Process task data
+          const completed = tasks.filter(task => task.status === 'COMPLETED').length;
+          const pending = tasks.filter(task => task.status === 'TODO').length;
+          const inProgress = tasks.filter(task => task.status === 'IN_PROGRESS').length;
+          const overdue = tasks.filter(task => new Date(task.dueDate) < new Date() && task.status !== 'COMPLETED').length;
+  
+          setTaskData({
+            labels: ['Completed', 'To do', 'In Progress', 'Over Due'],
+            datasets: [{
+              data: [completed, pending, inProgress, overdue],
+              backgroundColor: ['#10B981', '#6366F1', '#F59E0B', '#EF4444'],
+            }],
+          });
+  
+          // Process priority data
+          const lowPriority = tasks.filter(task => task.priority === 'LOW').length;
+          const mediumPriority = tasks.filter(task => task.priority === 'MEDIUM').length;
+          const highPriority = tasks.filter(task => task.priority === 'HIGH').length;
+  
+          setPriorityData({
+            labels: ['Low', 'Medium', 'High'],
+            datasets: [{
+              data: [lowPriority, mediumPriority, highPriority],
+              backgroundColor: ['#10B981', '#F59E0B', '#EF4444'],
+            }],
+          });
+        })
+        .catch((error) => {
+          console.error('Error fetching tasks:', error);
+          // Handle error as needed
         });
+    }
+  }, [empId]);
+  
 
-        const lowPriority = tasks.filter(task => task.priority === 'Low').length;
-        const mediumPriority = tasks.filter(task => task.priority === 'Medium').length;
-        const highPriority = tasks.filter(task => task.priority === 'High').length;
+  // useEffect(() => {
+  //   axios.get(`http://localhost:3001/tasks?empId=${empId}`)
+  //     .then((response) => {
+  //       const tasks = response.data;
+  //       const completed = tasks.filter(task => task.status === 'Completed').length;
+  //       const pending = tasks.filter(task => task.status === 'To do').length;
+  //       const inProgress = tasks.filter(task => task.status === 'In Progress').length;
+  //       const overdue = tasks.filter(task => new Date(task.dueDate) < new Date() && task.status !== 'Completed').length;
 
-        setPriorityData({
-          labels: ['Low', 'Medium', 'High'],
-          datasets: [{
-            data: [lowPriority, mediumPriority, highPriority],
-            backgroundColor: ['#10B981', '#F59E0B', '#EF4444'],
-          }],
-        });
-      })
-      .catch((error) => console.error('Error fetching task data:', error));
-  }, [employeeId]);
+  //       setTaskData({
+  //         labels: ['Completed', 'To do', 'In Progress', 'Over Due'],
+  //         datasets: [{
+  //           data: [completed, pending, inProgress, overdue],
+  //           backgroundColor: ['#10B981', '#6366F1', '#F59E0B', '#EF4444'],
+  //         }],
+  //       });
+
+  //       const lowPriority = tasks.filter(task => task.priority === 'Low').length;
+  //       const mediumPriority = tasks.filter(task => task.priority === 'Medium').length;
+  //       const highPriority = tasks.filter(task => task.priority === 'High').length;
+
+  //       setPriorityData({
+  //         labels: ['Low', 'Medium', 'High'],
+  //         datasets: [{
+  //           data: [lowPriority, mediumPriority, highPriority],
+  //           backgroundColor: ['#10B981', '#F59E0B', '#EF4444'],
+  //         }],
+  //       });
+  //     })
+  //     .catch((error) => console.error('Error fetching task data:', error));
+  // }, [empId]);
 
   return (
     <div className="min-h-screen bg-gray-100">
@@ -60,7 +128,7 @@ const EmployeeDashboard = () => {
             <h1 className="text-xl font-bold text-gray-900">TaskFlow</h1>
           </div>
           <div>
-            <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mr-2" onClick={() => navigate("/ViewTasks")}>
+            <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mr-2" onClick={() => navigate("/EmployeeViewTasks")}>
               View Tasks
             </button>
             <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" onClick={() => navigate("/HomePage")}>
@@ -89,24 +157,24 @@ const EmployeeDashboard = () => {
             <dl className="grid grid-cols-1 gap-x-3 gap-y-6 sm:grid-cols-2 text-m">
               <div className="sm:col-span-1">
                 <dt className="font-medium text-gray-500">Name</dt>
-                <dd className="mt-1 text-gray-900">Abc</dd>
+                <dd className="mt-1 text-gray-900">{employeeDetails.name}</dd>
               </div>
               <div className="sm:col-span-1">
                 <dt className="font-medium text-gray-500">Designation</dt>
-                <dd className="mt-1 text-gray-900">Developer-I</dd>
+                <dd className="mt-1 text-gray-900">{employeeDetails.designation}</dd>
               </div>
               <div className="sm:col-span-1">
                 <dt className="font-medium text-gray-500">Email</dt>
-                <dd className="mt-1 text-gray-900">abc@gmail.com</dd>
+                <dd className="mt-1 text-gray-900">{employeeDetails.email}</dd>
               </div>
               <div className="sm:col-span-1">
                 <dt className="font-medium text-gray-500">Contact</dt>
-                <dd className="mt-1 text-gray-900">8292726378</dd>
+                <dd className="mt-1 text-gray-900">{employeeDetails.contact}</dd>
               </div>
-              <div className="sm:col-span-2">
+              {/* <div className="sm:col-span-2">
                 <dt className="font-medium text-gray-500">Manager</dt>
-                <dd className="mt-1 text-gray-900">xyz</dd>
-              </div>
+                <dd className="mt-1 text-gray-900">{employeeDetails.managerId}</dd>
+              </div> */}
             </dl>
           </div>
         </div>

@@ -51,6 +51,7 @@ public class TaskController {
                     .body(null);
         }
     }
+
     
     @GetMapping("/getTasksByDueDate/{dueDate}")
     public ResponseEntity<List<TaskResponseDto>> getTasksByDueDate(@PathVariable LocalDate dueDate) {
@@ -117,10 +118,10 @@ public class TaskController {
     }
 
     @PutMapping("/updateTaskStatus/{taskId}/{status}")
-    public ResponseEntity<TaskResponseDto> updateTaskStatus(@PathVariable Long taskId, @PathVariable Status status){
+    public ResponseEntity<TaskResponseDto> updateTaskStatus(@PathVariable Long taskId, @PathVariable String status){
         try {
             return ResponseEntity.status(HttpStatus.OK)
-                    .body(taskService.updateTaskStatus(taskId,status));
+                    .body(taskService.updateTaskStatus(taskId, Status.valueOf(status)));
         }
         catch (TaskNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
@@ -137,6 +138,22 @@ public class TaskController {
         try {
             return ResponseEntity.status(HttpStatus.OK)
                     .body(taskService.deleteTask(taskId));
+        }
+        catch (TaskNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(null);
+        }
+        catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(null);
+        }
+    }
+
+    @GetMapping("/getTasksByEmployeeId/{employeeId}")
+    public ResponseEntity<List<TaskResponseDto>> getTasksByEmployeeId(@PathVariable Long employeeId) {
+        try {
+            return ResponseEntity.status(HttpStatus.OK)
+                    .body(taskService.getTasksByEmployeeId(employeeId));
         }
         catch (TaskNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)

@@ -13,6 +13,8 @@ import EditTaskPopup from './components/EditTaskPopup';
 import EmployeeDashboard from './components/EmployeeDashboard';
 import ViewTasks from './components/ViewTasks';
 import ErrorPage from './components/ErrorPage';
+import PrivateRoute from './components/PrivateRoute';
+import EmployeeViewTasks from './components/EmployeeViewTasks';
 
 
 
@@ -24,16 +26,17 @@ function App() {
           <Route path="/HomePage" element={<HomePage/>}></Route>
           <Route path="/Login" element={<Login/>}></Route>
           <Route path="/ManagerRegistration" element={<ManagerRegistrationForm/>}></Route>
+          <Route path="/ErrorPage" element={<ErrorPage/>}></Route>
           <Route path="/ManagerDashboard" element={<ManagerDashboard/>}></Route>
           <Route path="/AddProjectPopup" element={<AddProjectPopup/>}></Route>
           <Route path="/ViewEmployees" element={<ViewEmployees/>}></Route>
           <Route path="/RegisterEmployeePopup" element={<RegisterEmployeePopup/>}></Route>
-          <Route path="/ManageProjects" element={<ManageProjects/>}></Route>
-          <Route path="/AddTaskPopup" element={<AddTaskPopup/>}></Route>
+          <Route path="/ManageProjects/:projectId" element={<ManageProjects/>}></Route>
+          <Route path="/AddTaskPopup/:projectId" element={<AddTaskPopup/>}></Route>
           <Route path="/EditTaskPopup" element={<EditTaskPopup/>}></Route>
           <Route path="/EmployeeDashboard" element={<EmployeeDashboard/>}></Route>
-          <Route path="/ViewTasks" element={<ViewTasks/>}></Route>
-          <Route path="/ErrorPage" element={<ErrorPage/>}></Route>
+          <Route path="/ViewTasks/:projectId" element={<ViewTasks/>}></Route>
+          <Route path="/EmployeeViewTasks" element={<EmployeeViewTasks/>}></Route>
         </Routes>
       </BrowserRouter>
     </div>

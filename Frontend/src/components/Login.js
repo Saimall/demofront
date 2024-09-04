@@ -50,23 +50,24 @@ const LoginPage = () => {
                 localStorage.setItem('jwtToken', data.token);
                 localStorage.setItem('userId', data.id);
 
+                // Redirect based on role
                 if (data.role === 'MANAGER') {
                     navigate('/ManagerDashboard');
                 } else if (data.role === 'EMPLOYEE') {
                     navigate('/EmployeeDashboard');
+                } else {
+                    // Handle unknown role
+                    toast.error('Unknown role');
                 }
-            }
-            else if(status === 403){
-              toast.error('Invalid credentials');
+            } else if (status === 403) {
+                toast.error('Invalid credentials');
             }
         } catch (error) {
             if (error.response && error.response.status === 404) {
                 toast.error('Invalid credentials');
-            }
-            else if (error.response && error.response.status === 403 && error.response.data === null) {
-              toast.error('Invalid credentials');
-              }
-            else {
+            } else if (error.response && error.response.status === 403 && error.response.data === null) {
+                toast.error('Invalid credentials');
+            } else {
                 toast.error('An error occurred. Please try again later.');
             }
         }

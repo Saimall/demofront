@@ -16,6 +16,7 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @Builder
 public class TaskResponseDto {
+    private Long taskId;
     private String taskTitle;
     private String taskDescription;
     private Long employeeId;

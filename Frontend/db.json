@@ -42,9 +42,9 @@
   "employees": [
     {
       "id": "E1",
-      "name": "Alice",
-      "email": "alice@gmail.com",
-      "contact": "9922888337",
+      "name": "Basil",
+      "email": "basil@gmail.com",
+      "contact": "9988776655",
       "designation": "Tester"
     },
     {
@@ -76,14 +76,6 @@
       "contact": "9992726533",
       "password": "nikhil",
       "designation": "Tester 2"
-    },
-    {
-      "id": "Q1qepOL",
-      "name": "Rajesh",
-      "email": "rajesh@gmail.com",
-      "contact": "7788226632",
-      "password": "rajesh",
-      "designation": "QA"
     }
   ]
 }

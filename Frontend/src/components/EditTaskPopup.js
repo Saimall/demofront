@@ -8,6 +8,7 @@ const EditTaskPopup = ({ task, onClose, onTaskUpdated }) => {
     priority: ''
   });
 
+  console.log(taskData)
   useEffect(() => {
     if (task) {
       setTaskData(task);
@@ -24,17 +25,18 @@ const EditTaskPopup = ({ task, onClose, onTaskUpdated }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!taskData.taskname || !taskData.dueDate || !taskData.priority) {
-      alert('Please fill in all fields');
-      return;
-    }
+    // if (!taskData.taskname || !taskData.dueDate || !taskData.priority) {
+    //   alert('Please fill in all fields');
+    //   return;
+    // }
+    console.log(taskData)
 
-    axios.put(`http://localhost:3001/tasks/${taskData.id}`, taskData)
-      .then(() => {
-        onTaskUpdated(taskData);
-        onClose();
-      })
-      .catch(error => console.error('Error updating task:', error));
+    axios.put(`http://localhost:9093/api/v2/task/updateTasks/${taskData.taskId}`, taskData)
+  .then(() => {
+    onTaskUpdated(taskData); // Notify parent component of the update
+    onClose(); // Close the popup
+  })
+  .catch(error => console.error('Error updating task:', error));
   };
 
   if (!taskData) {

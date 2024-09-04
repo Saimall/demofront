@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 public interface TaskRepository extends JpaRepository<Task,Long> {
     List<Task> findByDueDate(LocalDate dueDate);
@@ -13,4 +14,7 @@ public interface TaskRepository extends JpaRepository<Task,Long> {
     List<Task> findByCreatedAt(LocalDate createdAt);
 
     List<Task> findByStatus(Status status);
+
+
+    List<Task> findByEmployeeId(Long employeeId);
 }

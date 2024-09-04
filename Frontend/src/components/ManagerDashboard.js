@@ -13,10 +13,18 @@ const ManagerDashboard = () => {
   const [selectedProject, setSelectedProject] = useState(null);
   const [showPopup, setShowPopup] = useState(false);
   const [managerDetails, setManagerDetails] = useState({});
-  const navigate = useNavigate();
   const [scrollToProjects, setScrollToProjects] = useState(false);
+  const navigate = useNavigate();
+
+  const managerId = localStorage.getItem('userId');
+  const jwtToken = localStorage.getItem('jwtToken');
 
   useEffect(() => {
+    if (!managerId || !jwtToken) {
+      navigate('/HomePage');
+      return;
+    }
+
     if (scrollToProjects) {
       const projectSection = document.getElementById('projectSection');
       if (projectSection) {
@@ -24,25 +32,46 @@ const ManagerDashboard = () => {
         setScrollToProjects(false);
       }
     }
-  }, [scrollToProjects]);
+  }, [scrollToProjects, managerId, jwtToken, navigate]);
 
   useEffect(() => {
-    // Fetch initial project data from the server
-    fetch('http://localhost:3001/projects')
-      .then(response => response.json())
-      .then(data => {
+    const fetchProjectData = async () => {
+      try {
+        const response = await fetch(`http://localhost:9093/api/v2/project/getProjects/${managerId}`);
+        if (!response.ok) {
+          throw new Error('Failed to fetch projects');
+        }
+        const data = await response.json();
         setProjectData(data);
-        // Set the first project as the default selected project
         if (data.length > 0) {
           setSelectedProject(data[0]);
         }
-      });
-  }, []);
+      } catch (error) {
+        console.error('Error fetching projects:', error);
+      }
+    };
+
+    fetchProjectData();
+  }, [managerId]);
+
+  useEffect(() => {
+    const fetchManagerDetails = async () => {
+      try {
+        const response = await axios.get(`http://localhost:9093/api/v1/manager/viewManagerDetails/${managerId}`, {
+          headers: { Authorization: `Bearer ${jwtToken}` },
+        });
+        setManagerDetails(response.data);
+      } catch (error) {
+        console.error('Error fetching manager details:', error);
+      }
+    };
+
+    fetchManagerDetails();
+  }, [managerId, jwtToken]);
 
   useEffect(() => {
     if (selectedProject) {
-      const tasks = selectedProject.tasks || [];
-
+      const tasks = selectedProject.tasks || []; // Default to empty array if tasks is undefined
       const taskCounts = {
         todo: tasks.filter(task => task.status === 'To Do').length,
         inProgress: tasks.filter(task => task.status === 'In Progress').length,
@@ -52,83 +81,76 @@ const ManagerDashboard = () => {
 
       const barData = {
         labels: ['To Do', 'In Progress', 'Completed', 'Overdue'],
-        datasets: [
-          {
-            label: 'Tasks',
-            data: [taskCounts.todo, taskCounts.inProgress, taskCounts.completed, taskCounts.overdue],
-            backgroundColor: ['#1e90ff', '#ffcc00', '#28a745', '#dc3545'],
-          },
-        ],
+        datasets: [{
+          label: 'Tasks',
+          data: [taskCounts.todo, taskCounts.inProgress, taskCounts.completed, taskCounts.overdue],
+          backgroundColor: ['#1e90ff', '#ffcc00', '#28a745', '#dc3545'],
+        }],
       };
 
       const barOptions = {
         responsive: true,
         plugins: {
-          legend: {
-            position: 'top',
-          },
-          title: {
-            display: true,
-            text: `Tasks for ${selectedProject.name}`,
-          },
+          legend: { position: 'top' },
+          title: { display: true, text: `Tasks for ${selectedProject.name}` },
         },
       };
     }
   }, [selectedProject]);
 
-  useEffect(() => {
-    const fetchManagerDetails = async () => {
-      const managerId = localStorage.getItem('userId');
-      const jwtToken = localStorage.getItem('jwtToken');
-      
-      try {
-        const response = await axios.get(`http://localhost:9093/api/v1/manager/viewManagerDetails/${managerId}`, {
-          headers: {
-            Authorization: `Bearer ${jwtToken}`,
-          },
-        });
-        setManagerDetails(response.data);
-      } catch (error) {
-        console.error('Error fetching manager details:', error);
+  const handleAddProject = async (newProject) => {
+    if (!managerId) {
+      console.error("Manager ID not found in local storage.");
+      return;
+    }
+    try {
+      const response = await fetch(`http://localhost:9093/api/v2/project/addProject/${managerId}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newProject),
+      });
+      if (!response.ok) {
+        throw new Error('Failed to add project');
       }
-    };
-
-    fetchManagerDetails();
-  }, []);
-
-  const handleAddProject = (newProject) => {
-    fetch('http://localhost:3001/projects', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(newProject),
-    })
-      .then(response => response.json())
-      .then(data => {
-        setProjectData(prevData => [...prevData, data]);
-      });
+      const data = await response.json();
+      setProjectData(prevData => [...prevData, data]);
+      setShowPopup(false); // Close the popup after adding
+    } catch (error) {
+      console.error('Error:', error);
+    }
   };
 
-  const handleDeleteProject = (projectId) => {
-    fetch(`http://localhost:3001/projects/${projectId}`, {
-      method: 'DELETE',
-    })
-      .then(() => {
-        setProjectData(prevData => {
-          const updatedData = prevData.filter(p => p.id !== projectId);
-          if (selectedProject?.id === projectId) {
-            setSelectedProject(updatedData.length > 0 ? updatedData[0] : null);
-          }
-          return updatedData;
-        });
+  const handleDeleteProject = async (projectId) => {
+    try {
+      const response = await fetch(`http://localhost:9093/api/v2/project/deleteProjects/${projectId}`, { method: 'DELETE' });
+      if (!response.ok) {
+        throw new Error('Failed to delete the project');
+      }
+      setProjectData(prevData => {
+
+        const updatedData = prevData.filter(p => p.projectId !== projectId);
+        if (selectedProject?.projectId === projectId) {
+          setSelectedProject(updatedData.length > 0 ? updatedData[0] : null);
+        }
+        return updatedData;
       });
+    } catch (error) {
+      console.error('Error deleting the project:', error);
+    }
   };
 
-  const handleProjectSelect = (e) => {
-    const projectId = e.target.value;
-    const selected = projectData.find(p => p.id === projectId);
-    setSelectedProject(selected);
+  const handleViewProject = (projectId) =>{
+    navigate(`/ManageProjects/${projectId}`);
+  }
+
+  const handleViewEmployees = () =>{
+    navigate("/ViewEmployees");
+  }
+
+  const handleLogout = () => {
+    localStorage.removeItem('jwtToken');
+    localStorage.removeItem('userId');
+    navigate('/HomePage');
   };
 
   return (
@@ -139,7 +161,10 @@ const ManagerDashboard = () => {
             <Activity className="h-8 w-8 text-blue-500 mr-2" />
             <h1 className="text-xl font-bold text-gray-900">TaskFlow</h1>
           </div>
-          <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" onClick={() => navigate("/HomePage")}>
+          <button
+            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+            onClick={handleLogout}
+          >
             Logout
           </button>
         </div>
@@ -151,44 +176,26 @@ const ManagerDashboard = () => {
         <div className="grid grid-cols-3 gap-6 mb-6">
           <div className="col-span-2 bg-white p-4 rounded-lg shadow">
             <h3 className="text-lg font-semibold mb-4">Performance</h3>
-            <select
-              onChange={handleProjectSelect}
-              className="mb-4 p-2 border rounded w-full max-w-sm"
-            >
-              <option value="">Select a Project</option>
-              {projectData.map(project => (
-                <option key={project.id} value={project.id}>
-                  {project.name}
-                </option>
-              ))}
-            </select>
             {selectedProject && (
               <Bar
                 data={{
                   labels: ['To Do', 'In Progress', 'Completed', 'Overdue'],
-                  datasets: [
-                    {
-                      label: 'Tasks',
-                      data: [
-                        selectedProject.tasks.filter(task => task.status === 'To Do').length,
-                        selectedProject.tasks.filter(task => task.status === 'In Progress').length,
-                        selectedProject.tasks.filter(task => task.status === 'Completed').length,
-                        selectedProject.tasks.filter(task => task.status === 'Overdue').length,
-                      ],
-                      backgroundColor: ['#1e90ff', '#ffcc00', '#28a745', '#dc3545'],
-                    },
-                  ],
+                  datasets: [{
+                    label: 'Tasks',
+                    data: [
+                      (selectedProject.tasks || []).filter(task => task.status === 'To Do').length,
+                      (selectedProject.tasks || []).filter(task => task.status === 'In Progress').length,
+                      (selectedProject.tasks || []).filter(task => task.status === 'Completed').length,
+                      (selectedProject.tasks || []).filter(task => task.status === 'Overdue').length,
+                    ],
+                    backgroundColor: ['#1e90ff', '#ffcc00', '#28a745', '#dc3545'],
+                  }],
                 }}
                 options={{
                   responsive: true,
                   plugins: {
-                    legend: {
-                      position: 'top',
-                    },
-                    title: {
-                      display: true,
-                      text: `Tasks for ${selectedProject.name}`,
-                    },
+                    legend: { position: 'top' },
+                    title: { display: true, text: `Tasks for ${selectedProject.name}` },
                   },
                 }}
               />
@@ -213,6 +220,19 @@ const ManagerDashboard = () => {
 
         <div id="projectSection" className="bg-white p-4 rounded-lg shadow mb-6">
           <h3 className="text-lg font-semibold mb-4">Projects</h3>
+          <button
+            className="bg-green-500 text-white px-4 py-2 rounded-md mb-4 hover:bg-green-600 transition-colors mx-4 font-bold"
+            onClick={() => setShowPopup(true)}
+          >
+            Add Project
+          </button>
+          
+<button
+            className="bg-green-500 text-white px-4 py-2 rounded-md mb-4 hover:bg-green-600 transition-colors font-bold"
+            onClick={() => handleViewEmployees()}
+          >
+            View Employees
+          </button>
           <table className="min-w-full bg-white">
             <thead>
               <tr>
@@ -226,21 +246,24 @@ const ManagerDashboard = () => {
             </thead>
             <tbody>
               {projectData.map((project, index) => (
-                <tr key={project.id} className={index % 2 === 0 ? 'bg-gray-100' : 'bg-white'}>
-                  <td className="px-4 py-2">{project.id}</td>
-                  <td className="px-4 py-2">{project.name}</td>
+                <tr key={project.projectId} className={index % 2 === 0 ? 'bg-gray-50' : 'bg-white'}>
+                  <td className="px-4 py-2">{project.projectId}</td>
+                  <td className="px-4 py-2">{project.projectName}</td>
                   <td className="px-4 py-2">{project.startDate}</td>
                   <td className="px-4 py-2">{project.endDate}</td>
-                  <td className="px-4 py-2">{project.description}</td>
-                  <td className="px-4 py-2 flex items-center">
-                    <a href= "/ManageProjects" className="text-blue-500 hover:underline mr-4">
-                      Manage Project
-                      </a>
+                  <td className="px-4 py-2">{project.projectDescription}</td>
+                  <td className="px-4 py-2">
                     <button
-                      className="text-red-500 hover:text-red-700"
-                      onClick={() => handleDeleteProject(project.id)}
+                      className="bg-red-500 text-white px-2 py-1 rounded-md hover:bg-red-600 transition-colors"
+                      onClick={() => handleDeleteProject(project.projectId)}
                     >
-                      <Trash2 className="h-5 w-5" />
+                      <Trash2 className="h-4 w-4 inline" /> Delete
+                    </button>
+                    <button
+                      className="bg-blue-500 text-white px-2 py-1 rounded-md ml-2 hover:bg-blue-600 transition-colors"
+                      onClick={() => handleViewProject(project.projectId)}
+                    >
+                      View
                     </button>
                   </td>
                 </tr>
@@ -249,25 +272,11 @@ const ManagerDashboard = () => {
           </table>
         </div>
 
-        <div className="flex justify-center space-x-4">
-          <button
-            className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600"
-            onClick={() => setShowPopup(true)}
-          >
-           + Add Project
-          </button>
-          <button className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600" onClick={()=>navigate("/ViewEmployees")}>
-            View Employee
-          </button>
-        </div>
-
-        {showPopup && (
-          <AddProjectPopup
-            onClose={() => setShowPopup(false)}
-            onAddProject={handleAddProject}
-            employees={[]} // Pass the employee list if needed
-          />
-        )}
+        <AddProjectPopup
+          show={showPopup}
+          onClose={() => setShowPopup(false)}
+          onAddProject={handleAddProject}
+        />
       </main>
     </div>
   );

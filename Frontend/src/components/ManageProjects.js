@@ -1,51 +1,62 @@
 import React, { useState, useEffect } from 'react';
 import { Activity, Edit, Trash2, List, Grid } from 'lucide-react';
-import { useNavigate } from 'react-router';
+import { useNavigate,useParams } from 'react-router';
 import axios from 'axios';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
-import AddTaskPopup from './AddTaskPopup'; // Import your AddTaskPopup component
-import EditTaskPopup from './EditTaskPopup'; // Import the EditTaskPopup component
-
+import AddTaskPopup from './AddTaskPopup'; 
+import EditTaskPopup from './EditTaskPopup'; 
 
 const ManageProjects = () => {
+  const { projectId } = useParams();
   const [tasks, setTasks] = useState([]);
   const [viewMode, setViewMode] = useState('list'); // 'list' or 'board'
   const [isAddTaskPopupOpen, setIsAddTaskPopupOpen] = useState(false);
-  const [editTaskId, setEditTaskId] = useState(null); // For editing
-  const [editTaskData, setEditTaskData] = useState(null); // For edit form data
+  // const [editTaskId, setEditTaskId] = useState(null); // For editing
+  // const [editTaskData, setEditTaskData] = useState(null); // For edit form data
   const navigate = useNavigate();
+  localStorage.setItem('projectId',projectId);
+  console.log(projectId)
 
   const statusClasses = {
-    'To Do': 'bg-blue-100 text-blue-800',
-    'In Progress': 'bg-orange-100 text-orange-800',
-    'Completed': 'bg-green-100 text-green-800',
-    'Overdue': 'bg-red-100 text-red-800',
+    'TODO': 'bg-blue-100 text-blue-800',
+    'IN_PROGRESS': 'bg-orange-100 text-orange-800',
+    'COMPLETED': 'bg-green-100 text-green-800',
+    'OVERDUE': 'bg-red-100 text-red-800',
   };
 
   const priorityClasses = {
-    Low: 'bg-green-100 text-green-800',
-    Medium: 'bg-yellow-100 text-yellow-800',
-    High: 'bg-red-100 text-red-800',
+    LOW: 'bg-green-100 text-green-800',
+    MEDIUM: 'bg-yellow-100 text-yellow-800',
+    HIGH: 'bg-red-100 text-red-800',
   };
+
+  // useEffect(() => {
+  //   fetchTasks();
+  // }, []);
+
+  // useEffect(() => {
+  //   if (editTaskId) {
+  //     // Fetch the task details for editing
+  //     axios.get(`http://localhost:3001/tasks/${editTaskId}`)
+  //       .then(response => setEditTaskData(response.data))
+  //       .catch(error => console.error('Error fetching task details:', error));
+  //   }
+  // }, [editTaskId]);
 
   useEffect(() => {
     fetchTasks();
-  }, []);
-
-  useEffect(() => {
-    if (editTaskId) {
-      // Fetch the task details for editing
-      axios.get(`http://localhost:3001/tasks/${editTaskId}`)
-        .then(response => setEditTaskData(response.data))
-        .catch(error => console.error('Error fetching task details:', error));
-    }
-  }, [editTaskId]);
+  }, [projectId]);
 
   const fetchTasks = () => {
-    axios.get('http://localhost:3001/tasks')
-      .then(response => setTasks(response.data))
+    axios.get(`http://localhost:9093/api/v2/task/getTaskByProjectId/${projectId}`)
+      .then(response =>{
+        console.log(response.data);
+        
+        setTasks(response.data)
+      })
       .catch(error => console.error('Error fetching tasks:', error));
   };
+
 
   const handleDragEnd = (result) => {
     const { source, destination } = result;
@@ -75,27 +86,68 @@ const ManageProjects = () => {
     fetchTasks(); // Refresh tasks after adding
   };
 
-  const handleEditTask = (taskId) => {
-    setEditTaskId(taskId);
-  };
+  const [showedit,setShowedit]= useState(false)
+  // const handleEditTask = (task) => {
+  //   console.log(task)
+  //   setShowedit(true)
+  //   setEditTaskData(task);
 
-  const handleDeleteTask = (taskId) => {
-    axios.delete(`http://localhost:3001/tasks/${taskId}`)
-      .then(() => {
-        setTasks(tasks.filter(task => task.id !== taskId));
-      })
-      .catch(error => console.error('Error deleting task:', error));
-  };
+  // };
 
-  const handleUpdateTask = (updatedTask) => {
-    axios.put(`http://localhost:3001/tasks/${updatedTask.id}`, updatedTask)
-      .then(() => {
-        fetchTasks(); // Refresh tasks after updating
-        setEditTaskId(null);
-        setEditTaskData(null);
-      })
-      .catch(error => console.error('Error updating task:', error));
-  };
+//   const handleDeleteTask = (taskId) => {
+//     axios.delete(`http://localhost:9093/api/v2/task/deleteTask/${taskId}`)
+//       .then(() => {
+//         setTasks(tasks.filter(task => task.taskId !== taskId));
+//       })
+//       .catch(error => console.error('Error deleting task:', error));
+// };
+
+const handleDeleteTask = (taskId) => {
+  console.log("Deleting task with ID:", taskId);
+
+  fetch(`http://localhost:9093/api/v2/task/deleteTask/${taskId}`, {
+      method: 'DELETE',
+  })
+  .then(response => {
+      if (!response.ok) {
+          throw new Error('Network response was not ok');
+      }
+      setTasks(tasks.filter(task => task.taskId !== taskId));
+  })
+  .catch(error => console.error('Error deleting task:', error));
+};
+
+
+
+
+  // const handleDeleteTask = (taskId) => {
+  //   axios.delete(`http://localhost:3001/tasks/${taskId}`)
+  //     .then(() => {
+  //       setTasks(tasks.filter(task => task.id !== taskId));
+  //     })
+  //     .catch(error => console.error('Error deleting task:', error));
+  // };
+
+
+  // const handleUpdateTask = (updatedTask) => {
+  //   axios.put(`http://localhost:9093/api/v2/task/updateTasks/${updatedTask.taskId}`, updatedTask)
+  //     .then(() => {
+  //       fetchTasks(); // Refresh tasks after updating
+  //       setEditTaskId(null);
+  //       setEditTaskData(null);
+  //     })
+  //     .catch(error => console.error('Error updating task:', error));
+  // };
+
+  // const handleUpdateTask = (updatedTask) => {
+  //   axios.put(`http://localhost:3001/tasks/${updatedTask.id}`, updatedTask)
+  //     .then(() => {
+  //       fetchTasks(); // Refresh tasks after updating
+  //       setEditTaskId(null);
+  //       setEditTaskData(null);
+  //     })
+  //     .catch(error => console.error('Error updating task:', error));
+  // };
 
   const columns = {
     'To Do': tasks.filter(task => task.status === 'To Do'),
@@ -131,7 +183,7 @@ const ManageProjects = () => {
 
       <main className="p-8 max-w-7xl mx-auto">
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-semibold">XYZ Project - Task List</h2>
+          <h2 className="text-xl font-semibold">Task List</h2>
           <div className="flex space-x-2">
             <button
               className="bg-purple-600 text-white px-4 py-2 rounded"
@@ -156,7 +208,7 @@ const ManageProjects = () => {
           <table className="min-w-full bg-white shadow-md rounded-lg overflow-hidden">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Task ID</th>
+                {/* <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Task ID</th> */}
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Task</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Assigned To</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Due Date</th>
@@ -167,10 +219,10 @@ const ManageProjects = () => {
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {tasks.map(task => (
-                <tr key={task.id}>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{task.id}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{task.taskname}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{task.assignedTo}</td>
+                <tr key={task.taskId}>
+                  {/* <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{task.taskId}</td> */}
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{task.taskTitle}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{task.employeeId}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{task.dueDate}</td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${priorityClasses[task.priority]}`}>
@@ -179,13 +231,13 @@ const ManageProjects = () => {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{task.status}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <Edit
+                    {/* <Edit
                       className="text-indigo-600 hover:text-indigo-900 cursor-pointer"
-                      onClick={() => handleEditTask(task.id)} // Handle Edit
-                    />
+                      onClick={() => handleEditTask(task)} // Handle Edit
+                    /> */}
                     <Trash2
                       className="text-red-600 hover:text-red-900 cursor-pointer"
-                      onClick={() => handleDeleteTask(task.id)} // Handle Delete
+                      onClick={() => handleDeleteTask(task.taskId)} // Handle Delete
                     />
                   </td>
                 </tr>
@@ -205,7 +257,7 @@ const ManageProjects = () => {
                     >
                       <h3 className="text-lg font-semibold mb-2">{status}</h3>
                       {columns[status].map((task, index) => (
-                        <Draggable key={task.id} draggableId={task.id.toString()} index={index}>
+                        <Draggable key={task.taskId} draggableId={task.taskId.toString()} index={index}>
                           {(provided) => (
                             <div
                               ref={provided.innerRef}
@@ -213,20 +265,20 @@ const ManageProjects = () => {
                               {...provided.dragHandleProps}
                               className={`p-4 mb-2 rounded-lg shadow-sm ${priorityClasses[task.priority]}`}
                             >
-                              <h4 className="font-medium">{task.taskname}</h4>
+                              <h4 className="font-medium">{task.taskTitle}</h4>
                               <p className="text-sm text-gray-600">{task.dueDate}</p>
                               <div className="flex justify-between items-center mt-2">
                                 <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${priorityClasses[task.priority]}`}>
                                   {task.priority}
                                 </span>
                                 <div className="flex space-x-2">
-                                  <Edit
+                                  {/* <Edit
                                     className="text-indigo-600 hover:text-indigo-900 cursor-pointer"
-                                    onClick={() => handleEditTask(task.id)} // Handle Edit
-                                  />
+                                    onClick={() => handleEditTask(task.taskId)} // Handle Edit
+                                  /> */}
                                   <Trash2
                                     className="text-red-600 hover:text-red-900 cursor-pointer"
-                                    onClick={() => handleDeleteTask(task.id)} // Handle Delete
+                                    onClick={() => handleDeleteTask(task.taskId)} // Handle Delete
                                   />
                                 </div>
                               </div>
@@ -249,13 +301,13 @@ const ManageProjects = () => {
             onTaskAdded={handleTaskAdded}
           />
         )}
-        {editTaskId && (
+        {/* {showedit && (
           <EditTaskPopup
             task={editTaskData}
-            onClose={() => setEditTaskId(null)}
+            onClose={() => setShowedit(false)}
             onTaskUpdated={handleUpdateTask}
           />
-        )}
+        )} */}
       </main>
     </div>
   );

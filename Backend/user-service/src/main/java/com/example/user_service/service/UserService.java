@@ -145,6 +145,7 @@ public class UserService {
         Manager manager = employee.getManager();
         if (manager != null) {
             manager.getEmployees().remove(employee);
+            System.out.println(manager);
             managerRepo.save(manager);
         }
 

@@ -22,23 +22,55 @@ const RegisterEmployeePopup = ({ isOpen, onClose, onAddEmployee }) => {
     return Object.keys(newErrors).length === 0;
   };
 
+
+
   const handleSubmit = () => {
     if (validate()) {
-      fetch('http://localhost:3001/employees', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ name, email, contact, password, designation }),
-      })
+        const managerId = localStorage.getItem('userId');
+        const jwtToken = localStorage.getItem('jwtToken');
+
+        fetch(`http://localhost:9093/api/v1/manager/registerEmployee/${managerId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${jwtToken}`,
+            },
+            body: JSON.stringify({ name, email, contact, password, designation }),
+        })
         .then((response) => response.json())
         .then((data) => {
-          onAddEmployee(data);
-          toast.success('Employee registered successfully');
-          onClose();
+            onAddEmployee(data);
+            toast.success('Employee registered successfully');
+            onClose();
+        })
+        .catch((error) => {
+            console.error('Error:', error);
+            toast.error('Failed to register employee');
         });
     }
-  };
+};
+
+
+
+
+
+  // const handleSubmit = () => {
+  //   if (validate()) {
+  //     fetch('http://localhost:3001/employees', {
+  //       method: 'POST',
+  //       headers: {
+  //         'Content-Type': 'application/json',
+  //       },
+  //       body: JSON.stringify({ name, email, contact, password, designation }),
+  //     })
+  //       .then((response) => response.json())
+  //       .then((data) => {
+  //         onAddEmployee(data);
+  //         toast.success('Employee registered successfully');
+  //         onClose();
+  //       });
+  //   }
+  // };
 
   return (
     <Dialog open={isOpen} onClose={onClose} className="fixed inset-0 flex items-center justify-center z-50">
