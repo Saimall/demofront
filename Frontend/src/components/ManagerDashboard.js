@@ -15,6 +15,11 @@ const ManagerDashboard = () => {
   const [managerDetails, setManagerDetails] = useState({});
   const [scrollToProjects, setScrollToProjects] = useState(false);
   const navigate = useNavigate();
+  const [barData, setBarData] = useState(null);
+  const [barOptions, setBarOptions] = useState(null);
+  const [tasks, setTasks] = useState([]);
+  const[selectedProjectName,setSelectedProjectName]=useState('');
+
 
   const managerId = localStorage.getItem('userId');
   const jwtToken = localStorage.getItem('jwtToken');
@@ -69,34 +74,109 @@ const ManagerDashboard = () => {
     fetchManagerDetails();
   }, [managerId, jwtToken]);
 
-  useEffect(() => {
-    if (selectedProject) {
-      const tasks = selectedProject.tasks || []; // Default to empty array if tasks is undefined
-      const taskCounts = {
-        todo: tasks.filter(task => task.status === 'To Do').length,
-        inProgress: tasks.filter(task => task.status === 'In Progress').length,
-        completed: tasks.filter(task => task.status === 'Completed').length,
-        overdue: tasks.filter(task => task.status === 'Overdue').length,
-      };
+/////////////////////////////////////////////////////////
+useEffect(() => {
+  if (selectedProject) {
+    fetchTasks(selectedProject.projectId);
+  }
+}, [selectedProject]);
 
-      const barData = {
-        labels: ['To Do', 'In Progress', 'Completed', 'Overdue'],
-        datasets: [{
-          label: 'Tasks',
-          data: [taskCounts.todo, taskCounts.inProgress, taskCounts.completed, taskCounts.overdue],
-          backgroundColor: ['#1e90ff', '#ffcc00', '#28a745', '#dc3545'],
-        }],
-      };
+  const fetchTasks = (projectId) => {
+    axios.get(`http://localhost:9093/api/v2/task/getTaskByProjectId/${projectId}`)
+      .then(response =>{
+        console.log(response.data);
+        
+        setTasks(response.data)
+      })
+      .catch(error => console.error('Error fetching tasks:', error));
+  };
 
-      const barOptions = {
-        responsive: true,
-        plugins: {
-          legend: { position: 'top' },
-          title: { display: true, text: `Tasks for ${selectedProject.name}` },
+///////////////////////////////////////////////////////
+
+
+useEffect(() => {
+  if (tasks.length > 0 && selectedProject) {
+    const taskCounts = {
+      todo: tasks.filter(task => task.status === 'TODO').length,
+      inProgress: tasks.filter(task => task.status === 'IN_PROGRESS').length,
+      completed: tasks.filter(task => task.status === 'COMPLETED').length,
+      overdue: tasks.filter(task => task.status === 'OVERDUE').length,
+    };
+
+    setBarData({
+      labels: ['To Do', 'In Progress', 'Completed', 'Overdue'],
+      datasets: [{
+        label: 'Tasks',
+        data: [taskCounts.todo, taskCounts.inProgress, taskCounts.completed, taskCounts.overdue],
+        backgroundColor: ['#1e90ff', '#ffcc00', '#28a745', '#dc3545'],
+      }],
+    });
+
+    setBarOptions({
+      responsive: true,
+      plugins: {
+        legend: {
+          position: 'top',
+          labels: {
+            generateLabels: (chart) => {
+              const labels = chart.data.labels.map((label, index) => ({
+                text: label,
+                fillStyle: chart.data.datasets[0].backgroundColor[index],
+              }));
+              return labels;
+            },
+          },
         },
-      };
-    }
-  }, [selectedProject]);
+        title: {
+          display: true,
+          text: `Tasks for ${selectedProject.projectName}`,
+        },
+        tooltip: {
+          callbacks: {
+            label: function(tooltipItem) {
+              const label = tooltipItem.label || '';
+              const value = tooltipItem.raw || 0;
+              return `${label}: ${value} tasks`;
+            },
+          },
+        },
+      },
+    });
+  }
+}, [tasks, selectedProject]);
+
+
+  // useEffect(() => {
+  //   if (selectedProject) {
+  //     if(tasks.length >0){
+  //     const taskCounts = {
+  //       TODO: tasks.filter(task => task.status === 'TODO').length,
+  //       IN_PROGRESS: tasks.filter(task => task.status === 'IN_PROGRESS').length,
+  //       COMPLETED: tasks.filter(task => task.status === 'COMPLETED').length,
+  //       OVERDUE: tasks.filter(task => task.status === 'OVERDUE').length,
+  //     };
+  
+  //     setBarData({
+  //       labels: ['To Do', 'In Progress', 'Completed', 'Overdue'],
+  //       datasets: [{
+  //         label: 'Tasks',
+  //         data: [taskCounts.TODO, taskCounts.IN_PROGRESS, taskCounts.COMPLETED, taskCounts.OVERDUE],
+  //         backgroundColor: ['#1e90ff', '#ffcc00', '#28a745', '#dc3545'],
+  //       }],
+  //     });
+  
+  //     setBarOptions({
+  //       responsive: true,
+  //       plugins: {
+  //         legend: { position: 'top' },
+  //         title: { display: true, text: `Tasks for ${selectedProject.projectName}` },
+  //       },
+  //     });
+  //   }
+  // }}, [tasks,selectedProject]);
+  
+
+
 
   const handleAddProject = async (newProject) => {
     if (!managerId) {
@@ -153,6 +233,13 @@ const ManagerDashboard = () => {
     navigate('/HomePage');
   };
 
+  const handleProjectSelect = (e) => {
+    const name = e.target.value;
+    setSelectedProjectName(name);
+    const selected = projectData.find(p => p.projectName ===name);
+    setSelectedProject(selected);
+  }
+
   return (
     <div className="min-h-screen bg-gray-100">
       <header className="bg-white shadow-sm">
@@ -176,30 +263,26 @@ const ManagerDashboard = () => {
         <div className="grid grid-cols-3 gap-6 mb-6">
           <div className="col-span-2 bg-white p-4 rounded-lg shadow">
             <h3 className="text-lg font-semibold mb-4">Performance</h3>
-            {selectedProject && (
+            
+            <select 
+            value={selectedProjectName}
+                onChange={handleProjectSelect}
+                className= "mb-4 p-2 border rounded w-full max-x-sm">
+                  <option value="" >Select a project</option>
+                  {projectData.map(project => (
+                    <option key={project.projectId}>
+                      {project.projectName}
+                    </option>
+                  ))}
+                </select>
+
+                {barData && (
               <Bar
-                data={{
-                  labels: ['To Do', 'In Progress', 'Completed', 'Overdue'],
-                  datasets: [{
-                    label: 'Tasks',
-                    data: [
-                      (selectedProject.tasks || []).filter(task => task.status === 'To Do').length,
-                      (selectedProject.tasks || []).filter(task => task.status === 'In Progress').length,
-                      (selectedProject.tasks || []).filter(task => task.status === 'Completed').length,
-                      (selectedProject.tasks || []).filter(task => task.status === 'Overdue').length,
-                    ],
-                    backgroundColor: ['#1e90ff', '#ffcc00', '#28a745', '#dc3545'],
-                  }],
-                }}
-                options={{
-                  responsive: true,
-                  plugins: {
-                    legend: { position: 'top' },
-                    title: { display: true, text: `Tasks for ${selectedProject.name}` },
-                  },
-                }}
+                data={barData}
+                options={barOptions}
               />
             )}
+
           </div>
 
           <div className="bg-white p-4 rounded-lg shadow flex flex-col justify-between" style={{ height: '300px' }}>
@@ -236,7 +319,7 @@ const ManagerDashboard = () => {
           <table className="min-w-full bg-white">
             <thead>
               <tr>
-                <th className="px-4 py-2 text-left">Project ID</th>
+                {/* <th className="px-4 py-2 text-left">Project ID</th> */}
                 <th className="px-4 py-2 text-left">Project Name</th>
                 <th className="px-4 py-2 text-left">Start Date</th>
                 <th className="px-4 py-2 text-left">End Date</th>
@@ -247,7 +330,7 @@ const ManagerDashboard = () => {
             <tbody>
               {projectData.map((project, index) => (
                 <tr key={project.projectId} className={index % 2 === 0 ? 'bg-gray-50' : 'bg-white'}>
-                  <td className="px-4 py-2">{project.projectId}</td>
+                  {/* <td className="px-4 py-2">{project.projectId}</td> */}
                   <td className="px-4 py-2">{project.projectName}</td>
                   <td className="px-4 py-2">{project.startDate}</td>
                   <td className="px-4 py-2">{project.endDate}</td>

@@ -148,7 +148,7 @@ const ViewEmployees = () => {
                 <table className="min-w-full divide-y divide-gray-200">
                   <thead className="bg-gray-50">
                     <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Employee ID</th>
+                      {/* <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Employee ID</th> */}
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Employee Name</th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email ID</th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Contact</th>
@@ -159,7 +159,7 @@ const ViewEmployees = () => {
                   <tbody className="bg-white divide-y divide-gray-200">
                     {currentEmployees.map((employee) => (
                       <tr key={employee.empId}>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">#{employee.id}</td>
+                        {/* <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">#{employee.id}</td> */}
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{employee.name}</td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{employee.email}</td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{employee.contact}</td>
