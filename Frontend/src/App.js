@@ -13,7 +13,6 @@ import EditTaskPopup from './components/EditTaskPopup';
 import EmployeeDashboard from './components/EmployeeDashboard';
 import ViewTasks from './components/ViewTasks';
 import ErrorPage from './components/ErrorPage';
-import PrivateRoute from './components/PrivateRoute';
 import EmployeeViewTasks from './components/EmployeeViewTasks';
 
 

@@ -10,10 +10,14 @@ spring:
   datasource:
     url: jdbc:mysql://localhost:3306/projectmanagement
     username: root
-    password: pass@word1
+    password: root
     driver-class-name: com.mysql.cj.jdbc.Driver
 
   jpa:
     hibernate:
       ddl-auto: update
       show-sql: true
+
+
+#  main:
+#    allow-bean-definition-overriding: true

@@ -3,6 +3,7 @@ import { Edit, Activity, List, Grid } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router';
 import axios from 'axios';
 import { Draggable, Droppable, DragDropContext } from 'react-beautiful-dnd';
+import format from 'date-fns/format';
 
 // Popup Component for Editing Task
 const EditTaskPopup = ({ task, onClose, onSave }) => {
@@ -150,7 +151,7 @@ const TaskManagement = () => {
               <tr key={task.taskId} className="border-b hover:bg-gray-50 transition-colors">
                 <td className="py-3 px-6">{task.taskId}</td>
                 <td className="py-3 px-6">{task.taskTitle}</td>
-                <td className="py-3 px-6">{task.dueDate}</td>
+                <td className="py-3 px-6">{format(new Date(task.dueDateTime), 'dd/MM/yyyy HH:mm')}</td>
                 <td className="py-3 px-6">{task.priority}</td>
                 <td className="py-3 px-6">
                   <span className={`px-2 py-1 rounded-full text-xs ${getStatusColor(task.status)}`}>

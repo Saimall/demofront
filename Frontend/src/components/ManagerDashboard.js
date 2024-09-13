@@ -99,16 +99,17 @@ useEffect(() => {
     const taskCounts = {
       todo: tasks.filter(task => task.status === 'TODO').length,
       inProgress: tasks.filter(task => task.status === 'IN_PROGRESS').length,
+      inReview: tasks.filter(task => task.status === 'IN_REVIEW').length,
       completed: tasks.filter(task => task.status === 'COMPLETED').length,
       overdue: tasks.filter(task => task.status === 'OVERDUE').length,
     };
 
     setBarData({
-      labels: ['To Do', 'In Progress', 'Completed', 'Overdue'],
+      labels: ['To Do', 'In Progress','In Review', 'Completed', 'Overdue'],
       datasets: [{
         label: 'Tasks',
-        data: [taskCounts.todo, taskCounts.inProgress, taskCounts.completed, taskCounts.overdue],
-        backgroundColor: ['#1e90ff', '#ffcc00', '#28a745', '#dc3545'],
+        data: [taskCounts.todo, taskCounts.inProgress, taskCounts.inReview, taskCounts.completed, taskCounts.overdue],
+        backgroundColor: ['#1e90ff', '#ffa500', '#ffff00', '#28a745', '#dc3545'],
       }],
     });
 

@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+
 const AddTaskPopup = ({ onClose, onTaskAdded }) => {
   const [task, setTask] = useState({
     taskTitle: '',
     taskDescription: '',
     dueDate: '',
+    dueTime: '', // New state for time
     priority: 'LOW',
     employeeId: ''
   });
@@ -27,7 +29,7 @@ const AddTaskPopup = ({ onClose, onTaskAdded }) => {
           'Content-Type': 'application/json',
         },
       });
-      
+
       if (!response.ok) {
         throw new Error('Error fetching employees');
       }
@@ -48,34 +50,30 @@ const AddTaskPopup = ({ onClose, onTaskAdded }) => {
   };
 
   const handleSubmit = async () => {
-    // Ensure dueDate is formatted correctly for LocalDate (YYYY-MM-DD)
-    const formattedDueDate = new Date(task.dueDate).toISOString().split('T')[0];
-
-    // Ensure priority matches expected enum values
-    const validPriorities = ['LOW', 'MEDIUM', 'HIGH'];
-    const formattedPriority = validPriorities.includes(task.priority) ? task.priority : 'LOW';
-
-    const requestData = {
-      ...task,
-      dueDate: formattedDueDate,
-      priority: formattedPriority
-    };
-
-    if (Object.values(requestData).some(value => value === '')) {
+    if (!task.dueDate || !task.dueTime || !task.taskTitle || !task.taskDescription || !task.employeeId) {
       setError('Please fill in all fields');
       return;
     }
-
+  
+    // Combine dueDate and dueTime into a LocalDateTime-compatible format
+    const formattedDueDateTime = `${task.dueDate}T${task.dueTime}:00`; // yyyy-MM-ddTHH:mm:ss
+  
+    // Ensure priority matches expected enum values
+    const validPriorities = ['LOW', 'MEDIUM', 'HIGH'];
+    const formattedPriority = validPriorities.includes(task.priority) ? task.priority : 'LOW';
+  
+    const requestData = {
+      ...task,
+      dueDateTime: formattedDueDateTime, // Send as dueDateTime for LocalDateTime field
+      priority: formattedPriority
+    };
+  
     const projectId = localStorage.getItem('projectId');
-    
+  
     try {
-      requestData.employeeId = parseInt(requestData.employeeId)
-      console.log(projectId)
       const response = await axios.post(`http://localhost:9093/api/v2/task/addTask/${projectId}`, requestData, {
         headers: {
           'Content-Type': 'application/json',
-          // Uncomment if you need authorization
-          // 'Authorization': `Bearer ${localStorage.getItem('jwtToken')}`,
         },
       });
   
@@ -87,6 +85,7 @@ const AddTaskPopup = ({ onClose, onTaskAdded }) => {
       setError('Failed to add task');
     }
   };
+  
 
   return (
     <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50">
@@ -110,6 +109,16 @@ const AddTaskPopup = ({ onClose, onTaskAdded }) => {
               type="date"
               name="dueDate"
               value={task.dueDate}
+              onChange={handleInputChange}
+              className="mt-1 p-2 border border-gray-300 rounded w-full"
+            />
+          </div>
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-gray-700">Due Time</label>
+            <input
+              type="time"
+              name="dueTime"
+              value={task.dueTime}
               onChange={handleInputChange}
               className="mt-1 p-2 border border-gray-300 rounded w-full"
             />

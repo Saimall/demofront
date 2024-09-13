@@ -192,4 +192,22 @@ public class UserService {
 
         return employeeDashboard;
     }
+
+    public String getEmployeeName(Long employeeId) {
+        Employee employee = employeeRepo.findById(employeeId)
+                .orElseThrow(() -> new EmployeeNotFoundException("Employee not found with id: " + employeeId));
+        return employee.getName();
+    }
+
+    public Employee updateEmployee(Long employeeId, EmployeeDto employeeDto) {
+        Employee employee = employeeRepo.findById(employeeId)
+                .orElseThrow(() -> new EmployeeNotFoundException("Employee not found with id: " + employeeId));
+
+        employee.setName(employeeDto.getName());
+        employee.setEmail(employeeDto.getEmail());
+        employee.setContact(employeeDto.getContact());
+        employee.setDesignation(employeeDto.getDesignation());
+
+        return employeeRepo.save(employee);
+    }
 }

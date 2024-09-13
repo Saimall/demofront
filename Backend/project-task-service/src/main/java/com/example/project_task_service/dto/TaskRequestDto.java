@@ -9,6 +9,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Data
 @AllArgsConstructor
@@ -16,7 +17,7 @@ import java.time.LocalDate;
 public class TaskRequestDto {
     private String taskTitle;
     private String taskDescription;
-    private LocalDate dueDate;
+    private LocalDateTime dueDateTime;
     @Enumerated(value = EnumType.STRING)
     private Priority priority;
     private Long employeeId; //from feign client(Assigned to)

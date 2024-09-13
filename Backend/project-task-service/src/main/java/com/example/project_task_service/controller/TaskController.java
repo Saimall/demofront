@@ -13,6 +13,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeParseException;
 import java.util.List;
 
 @RestController
@@ -53,37 +55,43 @@ public class TaskController {
     }
 
     
-    @GetMapping("/getTasksByDueDate/{dueDate}")
-    public ResponseEntity<List<TaskResponseDto>> getTasksByDueDate(@PathVariable LocalDate dueDate) {
+//    @GetMapping("/getTasksByDueDate/{dueDate}")
+//    public ResponseEntity<List<TaskResponseDto>> getTasksByDueDate(@PathVariable LocalDate dueDate) {
+//        try {
+//            return ResponseEntity.status(HttpStatus.OK)
+//                    .body(taskService.getTasksByDueDate(dueDate));
+//        }
+//        catch (TaskNotFoundException e) {
+//            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+//                    .body(null);
+//        }
+//        catch (Exception e) {
+//            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+//                    .body(null);
+//        }
+//    }
+
+//
+
+    @GetMapping("/getTasksByCreatedDate/{createdDate}")
+    public ResponseEntity<List<TaskResponseDto>> getTasksByCreatedDate(@PathVariable String createdDate) {
         try {
+            // Parse the date from string
+            LocalDate date = LocalDate.parse(createdDate);
             return ResponseEntity.status(HttpStatus.OK)
-                    .body(taskService.getTasksByDueDate(dueDate));
-        }
-        catch (TaskNotFoundException e) {
+                    .body(taskService.getTasksByCreatedDate(date));
+        } catch (DateTimeParseException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body(null); // Or return a meaningful error message
+        } catch (TaskNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(null);
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(null);
         }
     }
 
-    @GetMapping("/getTasksByCreatedDate/{createdAt}")
-    public ResponseEntity<List<TaskResponseDto>> getTasksByCreatedDate(@PathVariable LocalDate createdAt) {
-        try {
-            return ResponseEntity.status(HttpStatus.OK)
-                    .body(taskService.getTasksByCreatedDate(createdAt));
-        }
-        catch (TaskNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(null);
-        }
-        catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(null);
-        }
-    }
 
     @GetMapping("/getTasksByStatus/{status}")
     public ResponseEntity<List<TaskResponseDto>> getTasksByStatus(@PathVariable Status status) {
@@ -164,4 +172,19 @@ public class TaskController {
                     .body(null);
         }
     }
+
+    @PutMapping("/submitTaskForReview/{taskId}")
+    public ResponseEntity<TaskResponseDto> submitTaskForReview(@PathVariable Long taskId) {
+        try {
+            return ResponseEntity.status(HttpStatus.OK)
+                    .body(taskService.submitTaskForReview(taskId));
+        } catch (TaskNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(null);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(null);
+        }
+    }
+
 }

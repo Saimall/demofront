@@ -2,16 +2,22 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
 const EditTaskPopup = ({ task, onClose, onTaskUpdated }) => {
-  const [taskData, setTaskData] = useState(task || {
-    taskname: '',
-    dueDate: '',
-    priority: ''
+  const [taskData, setTaskData] = useState({
+    taskId: '',
+    taskTitle: '',
+    dueDateTime: '',
+    priority: '',
+    ...task
   });
 
-  console.log(taskData)
   useEffect(() => {
     if (task) {
-      setTaskData(task);
+      setTaskData({
+        taskId: task.taskId,
+        taskTitle: task.taskTitle,
+        dueDateTime: task.dueDateTime,
+        priority: task.priority
+      });
     }
   }, [task]);
 
@@ -25,22 +31,16 @@ const EditTaskPopup = ({ task, onClose, onTaskUpdated }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    // if (!taskData.taskname || !taskData.dueDate || !taskData.priority) {
-    //   alert('Please fill in all fields');
-    //   return;
-    // }
-    console.log(taskData)
-
     axios.put(`http://localhost:9093/api/v2/task/updateTasks/${taskData.taskId}`, taskData)
-  .then(() => {
-    onTaskUpdated(taskData); // Notify parent component of the update
-    onClose(); // Close the popup
-  })
-  .catch(error => console.error('Error updating task:', error));
+      .then(() => {
+        onTaskUpdated(taskData); // Notify parent component of the update
+        onClose(); // Close the popup
+      })
+      .catch(error => console.error('Error updating task:', error));
   };
 
   if (!taskData) {
-    return null; // or you can display a loading spinner or a message here
+    return null;
   }
 
   return (
@@ -52,8 +52,8 @@ const EditTaskPopup = ({ task, onClose, onTaskUpdated }) => {
             <label className="block text-sm font-medium text-gray-700">Task Name</label>
             <input
               type="text"
-              name="taskname"
-              value={taskData.taskname}
+              name="taskTitle"
+              value={taskData.taskTitle}
               onChange={handleChange}
               className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm"
               required
@@ -62,9 +62,9 @@ const EditTaskPopup = ({ task, onClose, onTaskUpdated }) => {
           <div className="mb-4">
             <label className="block text-sm font-medium text-gray-700">Due Date</label>
             <input
-              type="date"
-              name="dueDate"
-              value={taskData.dueDate}
+              type="datetime-local"
+              name="dueDateTime"
+              value={taskData.dueDateTime}
               onChange={handleChange}
               className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm"
               required
@@ -80,9 +80,9 @@ const EditTaskPopup = ({ task, onClose, onTaskUpdated }) => {
               required
             >
               <option value="">Select Priority</option>
-              <option value="Low">Low</option>
-              <option value="Medium">Medium</option>
-              <option value="High">High</option>
+              <option value="LOW">Low</option>
+              <option value="MEDIUM">Medium</option>
+              <option value="HIGH">High</option>
             </select>
           </div>
           <div className="flex justify-end space-x-2">

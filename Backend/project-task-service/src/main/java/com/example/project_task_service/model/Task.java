@@ -21,7 +21,7 @@ public class Task {
     private Long taskId;
     private String taskTitle;
     private String taskDescription;
-    private LocalDate dueDate;
+    private LocalDateTime dueDateTime;
     @Enumerated(value = EnumType.STRING)
     private Priority priority;
     @Enumerated(value = EnumType.STRING)
@@ -29,9 +29,9 @@ public class Task {
 
     private Long employeeId; //(Assigned to)
 
-    private LocalDate createdAt;
-    private LocalDate updatedAt;
-    private LocalDate completedAt;
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
+    private LocalDateTime completedAt;
 
     @JsonBackReference
     @ManyToOne(fetch = FetchType.LAZY)

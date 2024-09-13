@@ -1,54 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { Edit, Activity, List, Grid } from 'lucide-react';
-import { useNavigate,useParams } from 'react-router';
+import { useNavigate, useParams } from 'react-router';
 import axios from 'axios';
 import { Draggable, Droppable, DragDropContext } from 'react-beautiful-dnd';
+import format from 'date-fns/format';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
-// Popup Component for Editing Task
-const EditTaskPopup = ({ task, onClose, onSave }) => {
-  const [status, setStatus] = useState(task.status);
-
-  const handleSubmit = () => {
-    onSave(task.taskId, status);
-    onClose();
-  };
-
-  return (
-    <div className="fixed inset-0 bg-gray-500 bg-opacity-50 flex items-center justify-center">
-      <div className="bg-white rounded-lg shadow-lg p-6 w-96">
-        <h2 className="text-xl font-bold mb-4">Edit Task</h2>
-        <div className="mb-4">
-          <label htmlFor="status" className="block text-sm font-medium text-gray-700 mb-1">Status</label>
-          <select
-            id="status"
-            value={status}
-            onChange={(e) => setStatus(e.target.value)}
-            className="border rounded px-2 py-1 w-full"
-          >
-            <option value="TODO">To Do</option>
-            <option value="IN_PROGRESS">In Progress</option>
-            <option value="COMPLETED">Completed</option>
-            <option value="OVERDUE">OverDue</option>
-          </select>
-        </div>
-        <div className="flex justify-end space-x-4">
-          <button
-            onClick={onClose}
-            className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded"
-          >
-            Cancel
-          </button>
-          <button
-            onClick={handleSubmit}
-            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-          >
-            Save
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-};
 
 // Main TaskManagement Component
 const TaskManagement = () => {
@@ -59,14 +17,12 @@ const TaskManagement = () => {
   const [view, setView] = useState('list');
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [selectedTask, setSelectedTask] = useState(null);
-  const empId= localStorage.getItem('userId');
-
+  const [detailsVisible, setDetailsVisible] = useState(null); // State to manage details visibility
+  const empId = localStorage.getItem('userId');
   const navigate = useNavigate();
 
-//changes done accidentally....
   useEffect(() => {
     if (empId) {
-      // Fetch tasks based on projectId from the API
       axios.get(`http://localhost:9093/api/v2/task/getTasksByEmployeeId/${empId}`)
         .then(response => {
           setTasks(response.data);
@@ -75,24 +31,29 @@ const TaskManagement = () => {
         .catch(error => console.error('Error fetching tasks:', error));
     }
   }, [empId]);
-  // useEffect(() => {
-  //   // Fetch tasks from the API
-  //   axios.get('http://localhost:3001/tasks')
-  //     .then(response => {
-  //       setTasks(response.data);
-  //       setFilteredTasks(response.data); // Initialize filteredTasks
-  //     })
-  //     .catch(error => console.error('Error fetching tasks:', error));
-  // }, []);
+
+
 
   useEffect(() => {
     if (searchDate) {
-      const tasksOnDate = tasks.filter(task => task.dueDate === searchDate);
+      const formattedSearchDate = new Date(searchDate).toISOString().split('T')[0];
+      const tasksOnDate = tasks.filter(task => {
+        const taskDate = new Date(task.dueDateTime).toISOString().split('T')[0];
+        return taskDate === formattedSearchDate;
+      });
       setFilteredTasks(tasksOnDate);
     } else {
       setFilteredTasks(tasks); // Reset filtered tasks when search date is cleared
     }
   }, [searchDate, tasks]);
+  // useEffect(() => {
+  //   if (searchDate) {
+  //     const tasksOnDate = tasks.filter(task => task.dueDate === searchDate);
+  //     setFilteredTasks(tasksOnDate);
+  //   } else {
+  //     setFilteredTasks(tasks); // Reset filtered tasks when search date is cleared
+  //   }
+  // }, [searchDate, tasks]);
 
   const handleDragEnd = (result) => {
     if (!result.destination) return;
@@ -106,56 +67,58 @@ const TaskManagement = () => {
     setTasks(updatedTasks);
     setFilteredTasks(updatedTasks); // Update filteredTasks to reflect changes
 
-    // Optionally send update to the server
     axios.put(`http://localhost:3001/tasks/${movedTask.taskId}`, movedTask)
       .catch(error => console.error('Error updating task status:', error));
   };
 
   const getStatusColor = (status) => {
     switch (status) {
-      case 'To Do': return 'bg-blue-100 text-blue-800';
-      case 'In Progress': return 'bg-orange-100 text-orange-800';
-      case 'OverDue': return 'bg-red-100 text-red-800';
-      case 'Completed': return 'bg-green-100 text-green-800';
+      case 'TODO': return 'bg-blue-100 text-blue-800';
+      case 'IN_PROGRESS': return 'bg-orange-100 text-orange-800';
+      case 'OVERDUE': return 'bg-red-100 text-red-800';
+      case 'COMPLETED': return 'bg-green-100 text-green-800';
+      case 'IN_REVIEW': return 'bg-yellow-100 text-yellow-800';
       default: return 'bg-gray-100 text-gray-800';
     }
   };
 
-  const handleEditClick = (task) => {
-    setSelectedTask(task);
-    setIsPopupOpen(true);
-  };
-
-
-
-  const handleSave = (taskId, status) => {
+  const handleAcceptTask = (taskId) => {
     const updatedTasks = tasks.map(task =>
-      task.taskId === taskId ? { ...task, status } : task
+      task.taskId === taskId ? { ...task, status: 'IN_PROGRESS' } : task
     );
     setTasks(updatedTasks);
-    setFilteredTasks(updatedTasks); // Update filteredTasks to reflect changes
+    setFilteredTasks(updatedTasks);
 
-    axios.put(`http://localhost:9093/api/v2/task/updateTaskStatus/${taskId}/${status}`)
+    axios.put(`http://localhost:9093/api/v2/task/updateTaskStatus/${taskId}/IN_PROGRESS`)
       .catch(error => console.error('Error updating task status:', error));
-};
+  };
 
-//   const handleSave = (taskId, status) => {
-//     const updatedTasks = tasks.map(task =>
-//       task.taskId === taskId ? { ...task, status } : task
-//     );
-//     setTasks(updatedTasks);
-//     setFilteredTasks(updatedTasks); // Update filteredTasks to reflect changes
+  const handleMarkForReview = (taskId) => {
+    const updatedTasks = tasks.map(task =>
+      task.taskId === taskId ? { ...task, status: 'IN_REVIEW' } : task
+    );
+    setTasks(updatedTasks);
+    setFilteredTasks(updatedTasks);
 
-//     axios.put(`http://localhost:3001/tasks/${taskId}`, { ...selectedTask, status })
-//       .catch(error => console.error('Error updating task status:', error));
-//   };
+    axios.put(`http://localhost:9093/api/v2/task/updateTaskStatus/${taskId}/IN_REVIEW`)
+      .catch(error => console.error('Error updating task status:', error));
+
+    toast.success('Task marked for review!');
+  };
+
+  const handleRowClick = (task) => {
+    if (detailsVisible === task.taskId) {
+      setDetailsVisible(null); // Hide details if the same row is clicked again
+    } else {
+      setDetailsVisible(task.taskId); // Show details for the clicked row
+    }
+  };
 
   const listView = (
     <div className="overflow-x-auto">
       <table className="w-full min-w-max bg-white shadow-md rounded-lg">
         <thead>
           <tr className="text-left border-b bg-gray-100 text-gray-700">
-            <th className="py-3 px-6">Task ID</th>
             <th className="py-3 px-6">Task</th>
             <th className="py-3 px-6">Due Date</th>
             <th className="py-3 px-6">Priority</th>
@@ -166,49 +129,69 @@ const TaskManagement = () => {
         <tbody>
           {filteredTasks.length > 0 ? (
             filteredTasks.map((task) => (
-              <tr key={task.id} className="border-b hover:bg-gray-50 transition-colors">
-                <td className="py-3 px-6">{task.taskId}</td>
-                <td className="py-3 px-6">{task.taskTitle}</td>
-                <td className="py-3 px-6">{task.dueDate}</td>
-                <td className="py-3 px-6">{task.priority}</td>
-                <td className="py-3 px-6">
-                  <span className={`px-2 py-1 rounded-full text-xs ${getStatusColor(task.status)}`}>
-                    {task.status}
-                  </span>
-                </td>
-                <td className="py-3 px-6 text-center">
-                  <button
-                    className="text-blue-500 hover:text-blue-700 transition-colors"
-                    onClick={() => handleEditClick(task)}
-                  >
-                    <Edit size={16} />
-                  </button>
-                </td>
-              </tr>
+              <React.Fragment key={task.taskId}>
+                <tr 
+                  className="border-b hover:bg-gray-50 transition-colors cursor-pointer"
+                  onClick={() => handleRowClick(task)}
+                >
+                  <td className="py-3 px-6">{task.taskTitle}</td>
+                  <td className="py-3 px-6">{format(new Date(task.dueDateTime), 'dd/MM/yyyy HH:mm')}</td>
+                  <td className="py-3 px-6">{task.priority}</td>
+                  <td className="py-3 px-6">
+                    <span className={`px-2 py-1 rounded-full text-xs ${getStatusColor(task.status)}`}>
+                      {task.status}
+                    </span>
+                  </td>
+                  <td className="py-3 px-6 text-center">
+                    {task.status === 'TODO' ? (
+                      <button
+                        className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleAcceptTask(task.taskId);
+                        }}
+                      >
+                        Accept Task
+                      </button>
+                    ) : task.status === 'IN_PROGRESS' ? (
+                      <button
+                        className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleMarkForReview(task.taskId);
+                        }}
+                      >
+                        Mark for Review
+                      </button>
+                    ) : null}
+                  </td>
+                </tr>
+                {detailsVisible === task.taskId && (
+                  <tr>
+                    <td colSpan="5" className="bg-gray-50 p-4">
+                      <h3 className="text-m font-bold">Description:</h3>
+                      <p className="mt-2">{task.taskDescription || `No description`}</p>
+                    </td>
+                  </tr>
+                )}
+              </React.Fragment>
             ))
           ) : (
             <tr>
-              <td colSpan="6" className="py-3 px-6 text-center text-gray-500">
+              <td colSpan="5" className="py-3 px-6 text-center text-gray-500">
                 No tasks found
               </td>
             </tr>
           )}
         </tbody>
       </table>
-      {isPopupOpen && (
-        <EditTaskPopup
-          task={selectedTask}
-          onClose={() => setIsPopupOpen(false)}
-          onSave={handleSave}
-        />
-      )}
     </div>
   );
 
   const boardView = (
     <DragDropContext onDragEnd={handleDragEnd}>
       <div className="flex space-x-4">
-        {['To Do', 'In Progress', 'Completed', 'Overdue'].map(status => (
+        {['TODO', 'IN_PROGRESS', 'COMPLETED', 'OVERDUE', 'IN_REVIEW'].map(status => (
           <Droppable key={status} droppableId={status}>
             {(provided) => (
               <div
@@ -218,7 +201,7 @@ const TaskManagement = () => {
               >
                 <h2 className="text-xl font-bold mb-4">{status}</h2>
                 {filteredTasks.filter(task => task.status === status).map((task, index) => (
-                  <Draggable key={task.id} draggableId={task.id} index={index}>
+                  <Draggable key={task.taskId} draggableId={task.taskId} index={index}>
                     {(provided) => (
                       <div
                         ref={provided.innerRef}
@@ -226,8 +209,8 @@ const TaskManagement = () => {
                         {...provided.dragHandleProps}
                         className={`mb-4 p-4 rounded ${getStatusColor(task.status)}`}
                       >
-                        <h3 className="font-semibold">{task.taskname}</h3>
-                        <p>{task.dueDate}</p>
+                        <h3 className="font-semibold">{task.taskTitle}</h3>
+                        <p>{format(new Date(task.dueDateTime), 'dd/MM/yyyy HH:mm')}</p>
                         <p>Priority: {task.priority}</p>
                       </div>
                     )}
@@ -290,6 +273,8 @@ const TaskManagement = () => {
         </div>
         {view === 'list' ? listView : boardView}
       </main>
+
+      <ToastContainer />
     </div>
   );
 };

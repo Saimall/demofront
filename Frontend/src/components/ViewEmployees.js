@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Trash2, Activity } from 'lucide-react';
+import { Trash2, Activity,Edit } from 'lucide-react';
 import { useNavigate } from 'react-router';
 import RegisterEmployeePopup from './RegisterEmployeePopup';
 
@@ -8,15 +8,15 @@ const ViewEmployees = () => {
   const [employees, setEmployees] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [isPopupOpen, setIsPopupOpen] = useState(false);
+  const [isEditPopupOpen, setIsEditPopupOpen] = useState(false);
+  const [editingEmployee, setEditingEmployee] = useState(null);
   const employeesPerPage = 10;
 
   const managerId = localStorage.getItem('userId'); // Retrieve managerId from local storage
   const jwtToken = localStorage.getItem('jwtToken'); // Retrieve JWT token from local storage
 
-
   useEffect(() => {
     const fetchEmployees = async () => {
-      
       if (!managerId || !jwtToken) {
         console.error('Manager ID or JWT token is missing.');
         return;
@@ -43,13 +43,7 @@ const ViewEmployees = () => {
     };
 
     fetchEmployees();
-  }, []);
-
-  // useEffect(() => {
-  //   fetch('http://localhost:3001/employees')
-  //     .then((response) => response.json())
-  //     .then((data) => setEmployees(data));
-  // }, []);
+  }, [managerId, jwtToken]);
 
   const totalEmployees = employees.length;
   const totalPages = Math.ceil(totalEmployees / employeesPerPage);
@@ -66,43 +60,58 @@ const ViewEmployees = () => {
     setEmployees([...employees, newEmployee]);
   };
 
-
-
   const handleDeleteEmployee = (empId) => {
-    const jwtToken = localStorage.getItem('jwtToken'); // Retrieve JWT token from local storage
-  
     fetch(`http://localhost:9093/api/v1/manager/deleteEmployee/${empId}`, {
       method: 'DELETE',
       headers: {
-        'Authorization': `Bearer ${jwtToken}`, // Include the JWT token in the Authorization header
-        'Content-Type': 'application/json' // Specify content type as JSON
+        'Authorization': `Bearer ${jwtToken}`,
+        'Content-Type': 'application/json'
       },
     })
     .then(response => {
       if (response.ok) {
-        // If the response is OK, filter out the deleted employee from the state
         setEmployees(employees.filter(employee => employee.empId !== empId));
       } else {
-        // Handle response errors (e.g., show a notification)
         console.error('Failed to delete employee');
       }
     })
     .catch(error => {
-      // Handle any errors that occur during fetch
       console.error('Error:', error);
     });
   };
-  
 
+  const handleEditEmployee = (employee) => {
+    setEditingEmployee(employee);
+    setIsEditPopupOpen(true);
+  };
 
-  // const handleDeleteEmployee = (empId) => {
-  //   fetch(`http://localhost:3001/employees/${empId}`, {
-  //     method: 'DELETE',
-  //   })
-  //   .then(() => {
-  //     setEmployees(employees.filter(employee => employee.empId !== empId));
-  //   });
-  // };
+  const handleUpdateEmployee = async (updatedEmployee) => {
+    if (!jwtToken) {
+      console.error('JWT token is missing.');
+      return;
+    }
+
+    try {
+      const response = await fetch(`http://localhost:9093/api/v1/employee/updateEmployee/${updatedEmployee.empId}`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${jwtToken}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(updatedEmployee),
+      });
+
+      if (response.ok) {
+        const updatedData = await response.json();
+        setEmployees(employees.map(employee => employee.empId === updatedEmployee.empId ? updatedData : employee));
+        setIsEditPopupOpen(false);
+      } else {
+        console.error('Failed to update employee');
+      }
+    } catch (error) {
+      console.error('Error:', error);
+    }
+  };
 
   return (
     <div className="bg-gray-100 min-h-screen">
@@ -148,7 +157,6 @@ const ViewEmployees = () => {
                 <table className="min-w-full divide-y divide-gray-200">
                   <thead className="bg-gray-50">
                     <tr>
-                      {/* <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Employee ID</th> */}
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Employee Name</th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email ID</th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Contact</th>
@@ -159,12 +167,17 @@ const ViewEmployees = () => {
                   <tbody className="bg-white divide-y divide-gray-200">
                     {currentEmployees.map((employee) => (
                       <tr key={employee.empId}>
-                        {/* <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">#{employee.id}</td> */}
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{employee.name}</td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{employee.email}</td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{employee.contact}</td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{employee.designation}</td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          <button
+                            className="text-blue-500 hover:text-blue-700 mr-2"
+                            onClick={() => handleEditEmployee(employee)}
+                          >
+                            <Edit size={20} />
+                          </button>
                           <button
                             className="text-red-500 hover:text-red-700"
                             onClick={() => handleDeleteEmployee(employee.empId)}
@@ -225,6 +238,81 @@ const ViewEmployees = () => {
         onClose={() => setIsPopupOpen(false)}
         onAddEmployee={handleAddEmployee}
       />
+
+      {/* Edit Employee Popup */}
+      {isEditPopupOpen && (
+        <div className="fixed inset-0 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-lg shadow-lg max-w-sm mx-auto">
+            <h3 className="text-lg font-bold mb-4">Edit Employee Details:</h3>
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                handleUpdateEmployee(editingEmployee);
+              }}
+            >
+              <div className="mb-4">
+                <label htmlFor="name" className="block text-sm font-medium text-gray-700">Name</label>
+                <input
+                  type="text"
+                  id="name"
+                  value={editingEmployee?.name || ''}
+                  onChange={(e) => setEditingEmployee({ ...editingEmployee, name: e.target.value })}
+                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                  required
+                />
+              </div>
+              <div className="mb-4">
+                <label htmlFor="email" className="block text-sm font-medium text-gray-700">Email</label>
+                <input
+                  type="email"
+                  id="email"
+                  value={editingEmployee?.email || ''}
+                  onChange={(e) => setEditingEmployee({ ...editingEmployee, email: e.target.value })}
+                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                  required
+                />
+              </div>
+              <div className="mb-4">
+                <label htmlFor="contact" className="block text-sm font-medium text-gray-700">Contact</label>
+                <input
+                  type="text"
+                  id="contact"
+                  value={editingEmployee?.contact || ''}
+                  onChange={(e) => setEditingEmployee({ ...editingEmployee, contact: e.target.value })}
+                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                  required
+                />
+              </div>
+              <div className="mb-4">
+                <label htmlFor="designation" className="block text-sm font-medium text-gray-700">Designation</label>
+                <input
+                  type="text"
+                  id="designation"
+                  value={editingEmployee?.designation || ''}
+                  onChange={(e) => setEditingEmployee({ ...editingEmployee, designation: e.target.value })}
+                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                  required
+                />
+              </div>
+              <div className="flex justify-end">
+                <button
+                  type="button"
+                  className="bg-gray-500 text-white px-4 py-2 rounded-md mr-2"
+                  onClick={() => setIsEditPopupOpen(false)}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="bg-blue-500 text-white px-4 py-2 rounded-md"
+                >
+                  Save
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

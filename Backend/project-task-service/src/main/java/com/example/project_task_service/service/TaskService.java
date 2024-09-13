@@ -11,14 +11,18 @@ import com.example.project_task_service.repository.ProjectRepository;
 import com.example.project_task_service.repository.TaskRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
+//@EnableScheduling
 public class TaskService {
 
     @Autowired
@@ -34,12 +38,12 @@ public class TaskService {
         Task task = Task.builder()
                 .taskTitle(taskDto.getTaskTitle())
                 .taskDescription(taskDto.getTaskDescription())
-                .dueDate(taskDto.getDueDate())
+                .dueDateTime(taskDto.getDueDateTime())
                 .priority(taskDto.getPriority())
                 .employeeId(taskDto.getEmployeeId())
                 .status(Status.TODO)
-                .createdAt(LocalDate.now())
-                .updatedAt(LocalDate.now())
+                .createdAt(LocalDateTime.now())
+                .updatedAt(LocalDateTime.now())
                 .completedAt(null)
                 .project(project)
                 .build();
@@ -59,46 +63,64 @@ public class TaskService {
                 .taskId(task.getTaskId())
                 .taskTitle(task.getTaskTitle())
                 .taskDescription(task.getTaskDescription())
-                .dueDate(task.getDueDate())
+                .dueDateTime(task.getDueDateTime())
                 .priority(task.getPriority())
                 .employeeId(task.getEmployeeId())
                 .status(task.getStatus())
                 .build()).toList();
     }
 
-    public List<TaskResponseDto> getTasksByDueDate(LocalDate dueDate) {
-        List<Task> tasks = taskRepository.findByDueDate(dueDate);
+//    public List<TaskResponseDto> getTasksByDueDate(LocalDate dueDate) {
+//        List<Task> tasks = taskRepository.findByDueDate(dueDate);
+//        if (tasks.isEmpty()) {
+//            throw new TaskNotFoundException("No tasks found with due date " + dueDate);
+//        }
+//
+//        return tasks.stream().map(task -> TaskResponseDto.builder()
+//                .taskId(task.getTaskId())
+//                .taskTitle(task.getTaskTitle())
+//                .taskDescription(task.getTaskDescription())
+//                .dueDateTime(task.getDueDateTime())
+//                .priority(task.getPriority())
+//                .employeeId(task.getEmployeeId())
+//                .status(task.getStatus())
+//                .build()).toList();
+//    }
+
+//    public List<TaskResponseDto> getTasksByCreatedDate(LocalDateTime createdAt) {
+//        List<Task> tasks = taskRepository.findByCreatedAt(createdAt);
+//        if (tasks.isEmpty()) {
+//            throw new TaskNotFoundException("No tasks found with created date " + createdAt);
+//        }
+//
+//        return tasks.stream().map(task -> TaskResponseDto.builder()
+//                .taskId(task.getTaskId())
+//                .taskTitle(task.getTaskTitle())
+//                .taskDescription(task.getTaskDescription())
+//                .dueDateTime(task.getDueDateTime())
+//                .priority(task.getPriority())
+//                .employeeId(task.getEmployeeId())
+//                .status(task.getStatus())
+//                .build()).toList();
+//    }
+
+    public List<TaskResponseDto> getTasksByCreatedDate(LocalDate createdDate) {
+        List<Task> tasks = taskRepository.findByCreatedDate(createdDate);
         if (tasks.isEmpty()) {
-            throw new TaskNotFoundException("No tasks found with due date " + dueDate);
+            throw new TaskNotFoundException("No tasks found with created date " + createdDate);
         }
 
         return tasks.stream().map(task -> TaskResponseDto.builder()
                 .taskId(task.getTaskId())
                 .taskTitle(task.getTaskTitle())
                 .taskDescription(task.getTaskDescription())
-                .dueDate(task.getDueDate())
+                .dueDateTime(task.getDueDateTime()) // Make sure this is handled in your DTO and model
                 .priority(task.getPriority())
                 .employeeId(task.getEmployeeId())
                 .status(task.getStatus())
                 .build()).toList();
     }
 
-    public List<TaskResponseDto> getTasksByCreatedDate(LocalDate createdAt) {
-        List<Task> tasks = taskRepository.findByCreatedAt(createdAt);
-        if (tasks.isEmpty()) {
-            throw new TaskNotFoundException("No tasks found with created date " + createdAt);
-        }
-
-        return tasks.stream().map(task -> TaskResponseDto.builder()
-                .taskId(task.getTaskId())
-                .taskTitle(task.getTaskTitle())
-                .taskDescription(task.getTaskDescription())
-                .dueDate(task.getDueDate())
-                .priority(task.getPriority())
-                .employeeId(task.getEmployeeId())
-                .status(task.getStatus())
-                .build()).toList();
-    }
 
     public List<TaskResponseDto> getTasksByStatus(Status status) {
         List<Task> tasks = taskRepository.findByStatus(status);
@@ -110,7 +132,7 @@ public class TaskService {
                 .taskId(task.getTaskId())
                 .taskTitle(task.getTaskTitle())
                 .taskDescription(task.getTaskDescription())
-                .dueDate(task.getDueDate())
+                .dueDateTime(task.getDueDateTime())
                 .priority(task.getPriority())
                 .employeeId(task.getEmployeeId())
                 .status(task.getStatus())
@@ -123,9 +145,9 @@ public class TaskService {
 
         existingTask.setTaskTitle(taskDto.getTaskTitle());
         existingTask.setTaskDescription(taskDto.getTaskDescription());
-        existingTask.setDueDate(taskDto.getDueDate());
+        existingTask.setDueDateTime(taskDto.getDueDateTime());
         existingTask.setPriority(taskDto.getPriority());
-        existingTask.setUpdatedAt(LocalDate.now());
+        existingTask.setUpdatedAt(LocalDateTime.now());
 
         taskRepository.save(existingTask);
 
@@ -133,7 +155,7 @@ public class TaskService {
                 .taskId(existingTask.getTaskId())
                 .taskTitle(existingTask.getTaskTitle())
                 .taskDescription(existingTask.getTaskDescription())
-                .dueDate(existingTask.getDueDate())
+                .dueDateTime(existingTask.getDueDateTime())
                 .priority(existingTask.getPriority())
                 .employeeId(existingTask.getEmployeeId())
                 .status(existingTask.getStatus())
@@ -145,7 +167,7 @@ public class TaskService {
                 .orElseThrow(() -> new TaskNotFoundException("Task not found with ID " + taskId));
 
         existingTask.setStatus(newStatus);
-        existingTask.setUpdatedAt(LocalDate.now());
+        existingTask.setUpdatedAt(LocalDateTime.now());
 
         taskRepository.save(existingTask);
 
@@ -153,7 +175,7 @@ public class TaskService {
                 .taskId(existingTask.getTaskId())
                 .taskTitle(existingTask.getTaskTitle())
                 .taskDescription(existingTask.getTaskDescription())
-                .dueDate(existingTask.getDueDate())
+                .dueDateTime(existingTask.getDueDateTime())
                 .priority(existingTask.getPriority())
                 .employeeId(existingTask.getEmployeeId())
                 .status(existingTask.getStatus())
@@ -187,10 +209,50 @@ public class TaskService {
                     .taskId(task.getTaskId())
                     .taskTitle(task.getTaskTitle())
                     .taskDescription(task.getTaskDescription())
-                    .dueDate(task.getDueDate())
+                    .dueDateTime(task.getDueDateTime())
                     .priority(task.getPriority())
                     .employeeId(task.getEmployeeId())
                     .status(task.getStatus())
                     .build()).toList();
         }
+
+
+    public TaskResponseDto submitTaskForReview(Long taskId) {
+        Task existingTask = taskRepository.findById(taskId)
+                .orElseThrow(() -> new TaskNotFoundException("Task not found with ID " + taskId));
+
+        if (existingTask.getStatus() != Status.COMPLETED) {
+            existingTask.setStatus(Status.IN_REVIEW);
+            existingTask.setUpdatedAt(LocalDateTime.now());
+            taskRepository.save(existingTask);
+        }
+
+        return TaskResponseDto.builder()
+                .taskId(existingTask.getTaskId())
+                .taskTitle(existingTask.getTaskTitle())
+                .taskDescription(existingTask.getTaskDescription())
+                .dueDateTime(existingTask.getDueDateTime())
+                .priority(existingTask.getPriority())
+                .employeeId(existingTask.getEmployeeId())
+                .status(existingTask.getStatus())
+                .build();
     }
+
+
+//    @Scheduled(cron = "0 * * * * ?") // Runs daily at midnight
+//    public void markOverdueTasks() {
+//        List<Task> tasks = taskRepository.findAll(); // Fetch all tasks, or apply necessary filters
+//        LocalDateTime now = LocalDateTime.now();
+//        System.out.println("Checking if scheduler is working");
+//        for (Task task : tasks) {
+//            System.out.println("Loop working");
+//            if (task.getDueDateTime().isBefore(now) && task.getStatus() != Status.COMPLETED && task.getStatus() != Status.IN_REVIEW) {
+//                System.out.println("If working");
+//                task.setStatus(Status.OVERDUE);
+//                task.setUpdatedAt(now);
+//                taskRepository.save(task);
+//            }
+//        }
+//    }
+
+}

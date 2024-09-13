@@ -10,6 +10,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Data
 @AllArgsConstructor
@@ -20,7 +21,7 @@ public class TaskResponseDto {
     private String taskTitle;
     private String taskDescription;
     private Long employeeId;
-    private LocalDate dueDate;
+    private LocalDateTime dueDateTime;
     @Enumerated(value = EnumType.STRING)
     private Priority priority;
     @Enumerated(value = EnumType.STRING)

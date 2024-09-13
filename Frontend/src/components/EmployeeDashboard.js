@@ -10,8 +10,8 @@ const jwtToken = localStorage.getItem('jwtToken');
 
 const EmployeeDashboard = () => {
   const [taskData, setTaskData] = useState({
-    labels: ['Completed', 'To do', 'In Progress', 'Over Due'],
-    datasets: [{ data: [0, 0, 0, 0], backgroundColor: ['#10B981', '#6366F1', '#F59E0B', '#EF4444'] }],
+    labels: ['Completed', 'To do', 'In Progress', 'In Review','Over Due'],
+    datasets: [{ data: [0, 0, 0, 0, 0], backgroundColor: ['#10B981', '#6366F1', '#F59E0B','#FFD700', '#EF4444'] }],
   });
 
   const [priorityData, setPriorityData] = useState({
@@ -56,13 +56,14 @@ const EmployeeDashboard = () => {
           const completed = tasks.filter(task => task.status === 'COMPLETED').length;
           const pending = tasks.filter(task => task.status === 'TODO').length;
           const inProgress = tasks.filter(task => task.status === 'IN_PROGRESS').length;
-          const overdue = tasks.filter(task => new Date(task.dueDate) < new Date() && task.status !== 'COMPLETED').length;
+          const inReview = tasks.filter(task => task.status === 'IN_REVIEW').length;
+          const overdue = tasks.filter(task => task.status === 'OVERDUE').length;
   
           setTaskData({
-            labels: ['Completed', 'To do', 'In Progress', 'Over Due'],
+            labels: ['Completed', 'To do', 'In Progress','In Review', 'Over Due'],
             datasets: [{
-              data: [completed, pending, inProgress, overdue],
-              backgroundColor: ['#10B981', '#6366F1', '#F59E0B', '#EF4444'],
+              data: [completed, pending, inProgress,inReview, overdue],
+              backgroundColor: ['#10B981', '#6366F1', '#F59E0B','#FFD700', '#EF4444'],
             }],
           });
   
@@ -87,37 +88,7 @@ const EmployeeDashboard = () => {
   }, [empId]);
   
 
-  // useEffect(() => {
-  //   axios.get(`http://localhost:3001/tasks?empId=${empId}`)
-  //     .then((response) => {
-  //       const tasks = response.data;
-  //       const completed = tasks.filter(task => task.status === 'Completed').length;
-  //       const pending = tasks.filter(task => task.status === 'To do').length;
-  //       const inProgress = tasks.filter(task => task.status === 'In Progress').length;
-  //       const overdue = tasks.filter(task => new Date(task.dueDate) < new Date() && task.status !== 'Completed').length;
 
-  //       setTaskData({
-  //         labels: ['Completed', 'To do', 'In Progress', 'Over Due'],
-  //         datasets: [{
-  //           data: [completed, pending, inProgress, overdue],
-  //           backgroundColor: ['#10B981', '#6366F1', '#F59E0B', '#EF4444'],
-  //         }],
-  //       });
-
-  //       const lowPriority = tasks.filter(task => task.priority === 'Low').length;
-  //       const mediumPriority = tasks.filter(task => task.priority === 'Medium').length;
-  //       const highPriority = tasks.filter(task => task.priority === 'High').length;
-
-  //       setPriorityData({
-  //         labels: ['Low', 'Medium', 'High'],
-  //         datasets: [{
-  //           data: [lowPriority, mediumPriority, highPriority],
-  //           backgroundColor: ['#10B981', '#F59E0B', '#EF4444'],
-  //         }],
-  //       });
-  //     })
-  //     .catch((error) => console.error('Error fetching task data:', error));
-  // }, [empId]);
 
   return (
     <div className="min-h-screen bg-gray-100">
