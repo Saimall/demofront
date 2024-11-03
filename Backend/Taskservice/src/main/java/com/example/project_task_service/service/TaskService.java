@@ -239,20 +239,6 @@ public class TaskService {
     }
 
 
-//    @Scheduled(cron = "0 * * * * ?") // Runs daily at midnight
-//    public void markOverdueTasks() {
-//        List<Task> tasks = taskRepository.findAll(); // Fetch all tasks, or apply necessary filters
-//        LocalDateTime now = LocalDateTime.now();
-//        System.out.println("Checking if scheduler is working");
-//        for (Task task : tasks) {
-//            System.out.println("Loop working");
-//            if (task.getDueDateTime().isBefore(now) && task.getStatus() != Status.COMPLETED && task.getStatus() != Status.IN_REVIEW) {
-//                System.out.println("If working");
-//                task.setStatus(Status.OVERDUE);
-//                task.setUpdatedAt(now);
-//                taskRepository.save(task);
-//            }
-//        }
-//    }
+
 
 }

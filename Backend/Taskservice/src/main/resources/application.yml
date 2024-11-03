@@ -8,10 +8,10 @@ spring:
   application:
     name: project-task-service
   datasource:
-    url: jdbc:mysql://localhost:3306/projectmanagement
-    username: root
-    password: root
-    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:postgresql://localhost:5432/projecttask
+    username: postgres
+    password: postgres
+    driver-class-name: org.postgresql.Driver
 
   jpa:
     hibernate:

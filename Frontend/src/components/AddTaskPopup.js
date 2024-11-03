@@ -1,7 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { useParams } from 'react-router-dom';
+
 
 const AddTaskPopup = ({ onClose, onTaskAdded }) => {
+
+  const { projectId } = useParams();
   const [task, setTask] = useState({
     taskTitle: '',
     taskDescription: '',
@@ -68,7 +72,7 @@ const AddTaskPopup = ({ onClose, onTaskAdded }) => {
       priority: formattedPriority
     };
   
-    const projectId = localStorage.getItem('projectId');
+ 
   
     try {
       const response = await axios.post(`http://localhost:9093/api/v2/task/addTask/${projectId}`, requestData, {
