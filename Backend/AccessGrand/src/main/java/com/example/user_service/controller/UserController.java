@@ -2,7 +2,7 @@ package com.example.user_service.controller;
 
 import com.example.user_service.dto.AuthenticationResponse;
 import com.example.user_service.exceptions.EmployeeNotFoundException;
-import com.example.user_service.model.User;
+import com.example.user_service.model.Usermain;
 import com.example.user_service.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -20,7 +20,7 @@ public class UserController {
 
 
     @PostMapping("/login")
-    public ResponseEntity<AuthenticationResponse> login(@RequestBody User user) {
+    public ResponseEntity<AuthenticationResponse> login(@RequestBody Usermain user) {
 
         try {
             return ResponseEntity.ok(service.verify(user));

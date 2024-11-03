@@ -22,7 +22,7 @@ public class ManagerController {
     @Autowired
     private UserService userService;
 
-    //To Register a Manager
+ 
     @PostMapping("/register")
     public ResponseEntity<Manager> registerManager(@RequestBody ManagerDto managerDto){
         try{
@@ -40,7 +40,7 @@ public class ManagerController {
 
     }
 
-    //To Register an Employee
+
     @PostMapping("/registerEmployee/{managerId}")
     public ResponseEntity<Employee> registerEmployee(@RequestBody EmployeeDto employeedto, @PathVariable Long managerId){
         try{
@@ -58,7 +58,7 @@ public class ManagerController {
     }
 
 
-    //To View Employees Assigned to Manager
+   
     @GetMapping("/{managerId}/viewEmployees")
     public ResponseEntity<List<Employee>> viewEmployees(@PathVariable Long managerId){
         try{
@@ -75,7 +75,7 @@ public class ManagerController {
         }
     }
 
-    //To View Employee Details by Employee Id
+  
     @GetMapping("/viewEmployeeById/{employeeId}")
     public ResponseEntity<Employee> viewEmployeeById(@PathVariable Long employeeId){
         try{
@@ -112,8 +112,6 @@ public class ManagerController {
                     .body(null);
         }
     }
-
-    //To View Manager Details by Manager Id (In Dashboard)
     @GetMapping("/viewManagerDetails/{managerId}")
     public ResponseEntity<ManagerDashboardDto> viewManagerDetails(@PathVariable Long managerId){
         try{

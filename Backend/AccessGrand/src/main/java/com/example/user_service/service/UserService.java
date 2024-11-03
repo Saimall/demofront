@@ -6,7 +6,7 @@ import com.example.user_service.exceptions.ManagerAlreadyExistException;
 import com.example.user_service.exceptions.ManagerNotFoundException;
 import com.example.user_service.model.Employee;
 import com.example.user_service.model.Manager;
-import com.example.user_service.model.User;
+import com.example.user_service.model.Usermain;
 import com.example.user_service.model.UserRole;
 import com.example.user_service.repository.EmployeeRepo;
 import com.example.user_service.repository.ManagerRepo;
@@ -55,7 +55,7 @@ public class UserService {
 //                .password(managerDto.getPassword())
                 .contact(managerDto.getContact())
                 .build();
-        User user = User.builder()
+        Usermain user = Usermain.builder()
                 .email(managerDto.getEmail())
                 .password(encoder.encode(managerDto.getPassword()))
                 .role(UserRole.MANAGER)
@@ -77,7 +77,7 @@ public class UserService {
                 .designation(employeedto.getDesignation())
                 .manager(manager)
                 .build();
-        User user = User.builder()
+        Usermain user = Usermain.builder()
                 .email(employeedto.getEmail())
                 .password(encoder.encode(employeedto.getPassword()))
                 .role(UserRole.EMPLOYEE)
@@ -88,11 +88,11 @@ public class UserService {
         return employee;
     }
 
-    public AuthenticationResponse verify(User user) {
+    public AuthenticationResponse verify(Usermain user) {
         Authentication authentication = authManager.authenticate(new UsernamePasswordAuthenticationToken(user.getEmail(), user.getPassword()));
         if (authentication.isAuthenticated()) {
             String token = jwtService.generateToken(user.getEmail());
-            Optional<User> existingUser = userRepo.findByEmail(user.getEmail());
+            Optional<Usermain> existingUser = userRepo.findByEmail(user.getEmail());
             if (existingUser.isPresent() && existingUser.get().getRole() == UserRole.MANAGER) {
                 Manager existingManager = managerRepo.findByEmail(existingUser.get().getEmail());
                 return new AuthenticationResponse(token, existingManager.getManagerId(), existingUser.get().getRole() );
@@ -109,14 +109,6 @@ public class UserService {
 
     }
 
-//    public User getuserdetails(String username) {
-//        return userRepo.findByUsername(username);
-//    }
-
-
-//    public List<Manager> getAllManagers() {
-//        return managerRepo.findAll();
-//    }
 
     public List<Employee> viewEmployees(Long managerId) {
         Manager manager = managerRepo.findById(managerId)
@@ -124,15 +116,6 @@ public class UserService {
         return manager.getEmployees();
     }
 
-
-//    public Employee updateEmployee(EmployeeDto employeedto, Long employeeId) {
-//        Employee employee = employeeRepo.findById(employeeId).orElseThrow(() -> new RuntimeException("Employee not found"));
-//        employee.setName(employeedto.getName());
-//        employee.setEmail(employeedto.getEmail());
-//        employee.setContact(employeedto.getContact());
-//        employee.setDesignation(employeedto.getDesignation());
-//        return employeeRepo.save(employee);
-//    }
 
 
 
@@ -149,27 +132,27 @@ public class UserService {
             managerRepo.save(manager);
         }
 
-        // Delete the employee from the user repository
+       
         userRepo.deleteByEmail(employee.getEmail());
 
-        // Now delete the employee
+        
         employeeRepo.deleteById(employeeId);
         return "Employee deleted successfully";
     }
 
 
     public Employee viewEmployeeById(Long employeeId) {
-        // Attempt to find the employee by ID
+       
         return employeeRepo.findById(employeeId)
                 .orElseThrow(() -> new EmployeeNotFoundException("Employee not found with id: " + employeeId));
     }
 
     public ManagerDashboardDto viewManagerDetails(Long managerId) {
-        // Attempt to find the manager by ID
+        
         Manager manager = managerRepo.findById(managerId)
                 .orElseThrow(() -> new ManagerNotFoundException("Manager not found with id: " + managerId));
 
-        // Create and populate the DTO
+      
         ManagerDashboardDto managerDashboard = new ManagerDashboardDto();
         managerDashboard.setName(manager.getName());
         managerDashboard.setEmail(manager.getEmail());
@@ -179,11 +162,11 @@ public class UserService {
     }
 
     public EmployeeDashboardDto viewEmployeeDetails(Long employeeId) {
-        // Attempt to find the employee by ID
+        
         Employee employee = employeeRepo.findById(employeeId)
                 .orElseThrow(() -> new EmployeeNotFoundException("Employee not found with id: " + employeeId));
 
-        // Create and populate the DTO
+        
         EmployeeDashboardDto employeeDashboard = new EmployeeDashboardDto();
         employeeDashboard.setName(employee.getName());
         employeeDashboard.setEmail(employee.getEmail());

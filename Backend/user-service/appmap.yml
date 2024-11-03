@@ -1,5 +1,0 @@
-language: "java"
-name: "user-service"
-appmap_dir: "tmp/appmap"
-packages:
-- path: "com.example.user_service"

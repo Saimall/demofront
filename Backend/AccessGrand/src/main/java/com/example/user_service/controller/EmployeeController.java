@@ -17,7 +17,7 @@ public class EmployeeController {
     @Autowired
     private UserService userService;
 
-    //To view Employee's details in DashBoard
+    
     @GetMapping("/viewEmployeeDetails/{employeeId}")
     public ResponseEntity<EmployeeDashboardDto> viewEmployeeDetails(@PathVariable Long employeeId){
         try{
